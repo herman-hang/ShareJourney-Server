@@ -22,7 +22,12 @@
     "require": {
         "php": ">=7.1.0",
         "topthink/framework": "^6.0.0",
-        "topthink/think-orm": "^2.0"
+        "topthink/think-orm": "^2.0",
+        "topthink/think-multi-app": "^1.0",
+        "thans/tp-jwt-auth": "^1.2",
+        "thans/thinkphp-filesystem-cloud": "^1.0",
+        "yurunsoft/yurun-oauth-login": "^3.0",
+        "edward1108/edward-captcha": "^1.1"
     },
     "require-dev": {
         "symfony/var-dumper": "^4.2",
