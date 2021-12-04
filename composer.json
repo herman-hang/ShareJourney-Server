@@ -27,7 +27,9 @@
         "thans/tp-jwt-auth": "^1.2",
         "thans/thinkphp-filesystem-cloud": "^1.0",
         "yurunsoft/yurun-oauth-login": "^3.0",
-        "edward1108/edward-captcha": "^1.1"
+        "edward1108/edward-captcha": "^1.1",
+        "topthink/think-queue": "^3.0",
+      "ext-iconv": "*"
     },
     "require-dev": {
         "symfony/var-dumper": "^4.2",

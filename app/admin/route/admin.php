@@ -27,3 +27,17 @@ Route::group('login',function (){
 Route::group('base',function (){
     Route::post('upload','upload');
 })->prefix('CommonController/');
+
+/**
+ * 系统管理相关路由
+ */
+Route::group('system',function (){
+    Route::get('/','system');
+    Route::put('/','systemEdit');
+    Route::get('security','security');
+    Route::put('security','securityEdit');
+    Route::get('switch','switch');
+    Route::put('switch','switchEdit');
+    Route::get('pass','pass');
+    Route::put('pass','passEdit');
+})->prefix('SystemController/');

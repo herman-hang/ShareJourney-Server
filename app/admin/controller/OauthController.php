@@ -166,7 +166,7 @@ class OauthController extends CommonController
                 //登录总次数自增1
                 Db::name('admin')->where('id', $admin['id'])->Inc('login_sum');
                 //记录日志
-                $this->log("使用{$loginType}快捷登录成功！", 1, $admin['id']);
+                self::log("使用{$loginType}快捷登录成功！", 1, $admin['id']);
                 return view('loading', ['token' => 'bearer ' . $token]);
             } else {
                 //设置openid的缓存,方便登录成功后进行绑定

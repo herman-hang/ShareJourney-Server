@@ -31,10 +31,10 @@ class CommonController extends BaseController
      * 记录管理员日志
      * @param string $content 日志内容
      * @param int $type 日志类型（1为登录日志，2为操作日志）
-     * @param null $id 管理员ID
+     * @param int $id 管理员ID
      * @throws \think\db\exception\DbException
      */
-    public function log(string $content, int $type = 2, $id = null)
+    public static function log(string $content, int $type = 2, int $id = 0)
     {
         //删除大于60天的日志
         Db::name('admin_log')->where('create_time', '<= time', time() - (84600 * 60))->delete();
@@ -92,7 +92,7 @@ class CommonController extends BaseController
                     $url = Config::get('filesystem.disks.qiniu.url');
                     break;
                 default:
-                    show(403, "请求错误");
+                    show(403, "请求错误！");
             }
             $saveName = [];
             foreach ($files as $file) {
@@ -108,7 +108,7 @@ class CommonController extends BaseController
                     $saveName[] = $url . "/" . Filesystem::disk($disk)->putFile($fileType, $file);
                 }
             }
-            show(200, "上传成功", $saveName);
+            show(200, "上传成功！", $saveName);
         } catch (\think\exception\ValidateException $e) {
             show(500, $e->getMessage());
         }

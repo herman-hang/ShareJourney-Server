@@ -54,7 +54,7 @@ class LoginController extends CommonController
                         //登录总次数自增1
                         $admin->inc('login_sum')->update();
                         //记录日志
-                        $this->log("登录成功！", 1, $admin['id']);
+                        self::log("登录成功！", 1, $admin['id']);
                         //参数为用户认证的信息，请自行添加
                         $token = JWTAuth::builder(['uid' => $admin['id']]);
                         show(200, '登录成功！', ['Authorization' => 'bearer ' . $token]);
@@ -81,7 +81,7 @@ class LoginController extends CommonController
                     //调用生成验证码方法
                     $code = $this->captcha();
                     //记录日志
-                    $this->log("登录输入验证码错误！", 1, $admin['id']);
+                    self::log("登录输入验证码错误！", 1, $admin['id']);
                     show(403, '验证码错误！', $code);
                 }
                 //解除登录错误的计算时间，恢复初始化
@@ -101,7 +101,7 @@ class LoginController extends CommonController
                                 //登录总次数自增1
                                 $admin->inc('login_sum')->update();
                                 //记录日志
-                                $this->log("登录成功！", 1, $admin['id']);
+                                self::log("登录成功！", 1, $admin['id']);
                                 //参数为用户认证的信息，请自行添加
                                 $token = JWTAuth::builder(['uid' => $admin['id']]);
                                 show(200, '登录成功！', ['Authorization' => 'bearer ' . $token]);
@@ -116,7 +116,7 @@ class LoginController extends CommonController
                                 $maxError = $system->getData('max_logerror');
                                 $count = $maxError - $errorCount;
                                 //记录日志
-                                $this->log("登录密码错误，还有{$count}次机会！", 1, $admin['id']);
+                                self::log("登录密码错误，还有{$count}次机会！", 1, $admin['id']);
                                 //调用生成验证码方法
                                 $code = $this->captcha();
                                 show(403, "登录密码错误，还有{$count}次机会！", $code);
@@ -126,7 +126,7 @@ class LoginController extends CommonController
                         //计算剩余多少分钟解封，这里强制转为int类型
                         $time = (int)(($admin->getData('ban_time') - time()) / 60);
                         //记录日志
-                        $this->log("登录错误过多，请{$time}分钟后再试！", 1, $admin['id']);
+                        self::log("登录错误过多，请{$time}分钟后再试！", 1, $admin['id']);
                         //调用生成验证码方法
                         $code = $this->captcha();
                         show(403, "登录错误过多，请{$time}分钟后再试！", $code);
@@ -144,7 +144,7 @@ class LoginController extends CommonController
                                 //封禁时间写入
                                 $admin->save(['ban_time' => $banTime]);
                                 //记录日志
-                                $this->log("登录错误过多，请{$BAN}分钟后再试！", 1, $admin['id']);
+                                self::log("登录错误过多，请{$BAN}分钟后再试！", 1, $admin['id']);
                                 //调用生成验证码方法
                                 $code = $this->captcha();
                                 show(403, "登录错误过多，请{$BAN}分钟后再试！", $code);
@@ -157,7 +157,7 @@ class LoginController extends CommonController
                                     //登录错误次数清零,登录错误时间清空
                                     $admin->save(['login_error' => 0, 'error_time' => NULL]);
                                     //记录日志
-                                    $this->log("登录成功！", 1, $admin['id']);
+                                    self::log("登录成功！", 1, $admin['id']);
                                     //参数为用户认证的信息，请自行添加
                                     $token = JWTAuth::builder(['uid' => $admin['id']]);
                                     show(200, '登录成功！', ['Authorization' => 'bearer ' . $token]);
@@ -172,7 +172,7 @@ class LoginController extends CommonController
                                     $maxError = $system->getData('max_logerror');
                                     $count = $maxError - $errorCount;
                                     //记录日志
-                                    $this->log("密码错误，还有{$count}次机会！", 1, $admin['id']);
+                                    self::log("密码错误，还有{$count}次机会！", 1, $admin['id']);
                                     //调用生成验证码方法
                                     $code = $this->captcha();
                                     show(403, "密码错误，还有{$count}次机会！", $code);
@@ -183,7 +183,7 @@ class LoginController extends CommonController
                         //计算剩余多少分钟解封，这里强制转为int类型
                         $time = (int)(($admin->getData('ban_time') - time()) / 60);
                         //记录日志
-                        $this->log("登录错误过多，请{$time}分钟后再试！", 1, $admin['id']);
+                        self::log("登录错误过多，请{$time}分钟后再试！", 1, $admin['id']);
                         //调用生成验证码方法
                         $code = $this->captcha();
                         show(403, "登录错误过多，请{$time}分钟后再试！", $code);

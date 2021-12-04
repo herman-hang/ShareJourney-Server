@@ -1,19 +1,33 @@
 <?php
 // 应用公共文件
 
-
+use think\facade\Config;
+use think\facade\Request;
 use think\Response;
+use think\facade\Queue;
 
 /**
  * 返回数据函数
  * @param int $code 状态码
  * @param string $msg 自定义消息
+ * @param int $uid 管理员id
  * @param array $data 返回数据
  * @param string $type 返回的数据格式
  * @param array $header 返回的响应头
  */
-function show(int $code = 200, string $msg = '操作成功', array $data = [], string $type = '', array $header = [])
+function show(int $code = 200, string $msg = '操作成功',  array $data = [], int $uid = 0, string $type = '', array $header = [])
 {
+    // 拼接url
+    $url = strtolower(Request::controller() . '/' . Request::action());
+    $notAuthRoute = Config::get('auth');
+    // 将数组中的每一项全部转为小写
+    $notAuth = array_map('strtolower', $notAuthRoute['not_auth']);
+    if (!in_array($url, $notAuth)) {
+        $info['msg'] = $msg;
+        $info['uid'] = $uid;
+        // 推送到消息队列
+        Queue::later(3, 'app\admin\job\AdminLogJob', $info, 'admin');
+    }
     $result = [
         'code' => $code,
         'msg' => $msg,

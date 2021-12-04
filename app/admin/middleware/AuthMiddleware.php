@@ -49,7 +49,7 @@ class AuthMiddleware
                     $auth = new \auth\Auth();
                     if (!$auth->check($url, $token['uid']->getValue())) {//规则名称,管理员ID
                         //没有操作权限
-                        show(403, "无权限操作");
+                        show(403, "无权限操作！");
                     }
                 }
                 //获取token的有效时间
@@ -70,16 +70,10 @@ class AuthMiddleware
                     try {
                         $expToken = JWTAuth::auth(false);
                     } catch (JWTException $exception) {
-                        show(401, '未授权请求');
+                        show(401, '未授权请求！');
                     }
-                    //实例化对象
-                    $log = new AdminLogModel();
                     $id = $expToken['uid']->getValue();
-                    $ip = Request::ip();
-                    Db::name('admin')->where('id', $id)->update(['lastlog_time' => time(), 'lastlog_ip' => $ip]);
-                    // 日志记录
-                    $log->save(['type' => 1, 'admin_id' => $id, 'content' => "登录超时", 'ip' => $ip, 'url' => Request::controller() . '/' . Request::action(), 'method' => Request::method()]);
-                    show(0, "登录超时");
+                    show(0, "登录超时！", [], $id);
                 }
             }
         }
