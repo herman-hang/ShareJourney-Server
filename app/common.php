@@ -24,7 +24,9 @@ function show(int $code = 200, string $msg = '操作成功',  array $data = [], 
     $notAuth = array_map('strtolower', $notAuthRoute['not_auth']);
     if (!in_array($url, $notAuth)) {
         $info['msg'] = $msg;
-        $info['uid'] = $uid;
+        if ($uid !== 0){
+            $info['uid'] = $uid;
+        }
         // 推送到消息队列
         Queue::later(3, 'app\admin\job\AdminLogJob', $info, 'admin');
     }

@@ -76,7 +76,7 @@ class AdminValidate extends \think\Validate
      * 管理员添加
      * @return AdminValidate
      */
-    public function sceneAdd()
+    public function sceneAdd(): AdminValidate
     {
         return $this->only(['user', 'name', 'password', 'passwords', 'card', 'mobile', 'email', 'age', 'status', 'role_id']);
     }
@@ -85,7 +85,7 @@ class AdminValidate extends \think\Validate
      * 管理员编辑
      * @return AdminValidate
      */
-    public function sceneEdit()
+    public function sceneEdit(): AdminValidate
     {
         return $this->only(['user', 'name', 'password', 'card', 'mobile', 'email', 'age'])->remove('password', 'require');
     }

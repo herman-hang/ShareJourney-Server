@@ -11,33 +11,56 @@
 use think\facade\Route;
 
 
-
 /**
  * 登录相关路由
  */
-Route::group('login',function (){
-    Route::post('/','login');
-    Route::get('switch','getSwitch');
-    Route::get('captcha','getCaptcha');
+Route::group('login', function () {
+    Route::post('/', 'login');
+    Route::get('switch', 'getSwitch');
+    Route::get('captcha', 'getCaptcha');
 })->prefix('LoginController/');
 
 /**
  * 公共方法相关路由
  */
-Route::group('base',function (){
-    Route::post('upload','upload');
+Route::group('base', function () {
+    Route::post('upload', 'upload');
 })->prefix('CommonController/');
 
 /**
  * 系统管理相关路由
  */
-Route::group('system',function (){
-    Route::get('/','system');
-    Route::put('/','systemEdit');
-    Route::get('security','security');
-    Route::put('security','securityEdit');
-    Route::get('switch','switch');
-    Route::put('switch','switchEdit');
-    Route::get('pass','pass');
-    Route::put('pass','passEdit');
+Route::group('system', function () {
+    Route::get('/', 'system');
+    Route::put('/', 'systemEdit');
+    Route::get('security', 'security');
+    Route::put('security', 'securityEdit');
+    Route::get('switch', 'switch');
+    Route::put('switch', 'switchEdit');
+    Route::get('pass', 'pass');
+    Route::put('pass', 'passEdit');
 })->prefix('SystemController/');
+
+/**
+ * 管理员管理相关路由
+ */
+Route::group('admin', function () {
+    Route::get('list', 'list');
+    Route::post('add', 'add');
+    Route::put('edit', 'edit');
+    Route::get(':id', 'query');
+    Route::delete('delete', 'delete');
+    Route::put('status', 'statusEdit');
+})->prefix('AdminController/');
+
+/**
+ * 权限组相关路由
+ */
+Route::group('group',function (){
+    Route::get('list', 'list');
+    Route::post('add', 'add');
+    Route::put('edit', 'edit');
+    Route::delete('delete', 'delete');
+    Route::get('[:id]', 'query');
+    Route::put('status', 'statusEdit');
+})->prefix('GroupController/');

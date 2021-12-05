@@ -41,7 +41,7 @@ class CommonController extends BaseController
         //实例化对象
         $log = new AdminLogModel();
         //执行添加并过滤非数据表字段
-        $log->save(['type' => $type, 'admin_id' => $id ?? request()->uid, 'content' => $content, 'ip' => Request::ip(), 'url' => Request::controller() . '/' . Request::action(), 'method' => Request::method()]);
+        $log->save(['type' => $type, 'admin_id' => $id !== 0 ? $id : request()->uid, 'content' => $content, 'ip' => Request::ip(), 'url' => Request::controller() . '/' . Request::action(), 'method' => Request::method()]);
     }
 
     /**
