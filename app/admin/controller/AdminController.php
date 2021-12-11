@@ -53,7 +53,7 @@ class AdminController extends CommonController
                     'page' => $data['current_page']
                 ]);
         }
-        show(200, "获取数据成功！", $list->toArray());
+        show(200, "获取数据成功！", $list->toArray() ?? []);
     }
 
     /**
@@ -197,5 +197,29 @@ class AdminController extends CommonController
                 show(403, "修改失败！");
             }
         }
+    }
+
+    /**
+     * 日志记录列表
+     * @throws \think\db\exception\DbException
+     */
+    public function logList()
+    {
+        // 接收数据
+        $data = Request::only(['keywords', 'per_page', 'current_page', 'type']);
+        //关联查询
+        $info = Db::view('admin_log')
+            ->view('admin', 'user', 'admin.id=admin_log.admin_id')
+            ->where('admin_log.admin_id', request()->uid)
+            ->where('type', $data['type'])
+            ->whereLike('admin_id|content', "%" . $data['keywords'] . "%")
+            ->order('create_time', 'desc')
+            ->paginate([
+                'list_rows' => $data['per_page'],
+                'query' => request()->param(),
+                'var_page' => 'page',
+                'page' => $data['current_page']
+            ]);
+        show(200, "获取日志数据成功！", $info->toArray() ?? []);
     }
 }

@@ -12,29 +12,31 @@ namespace app\admin\job;
 
 
 use app\admin\controller\CommonController;
-use think\Log;
+use think\facade\Log;
 use think\queue\Job;
 
 class AdminLogJob
 {
     /**
-     * 逻辑处理
-     * @param Job $job
-     * @param array $data
+     * 日志记录
+     * @param Job $job 队列
+     * @param array $data 业务参数
      */
     public function fire(Job $job, array $data)
     {
-        // 重复执行3次后停止
         if ($job->attempts() > 3) {
-            Log::error('记录日志失败！');
+            //执行失败写入错误日志
+            Log::error('记录日志失败');
+            //删除这个任务
+            $job->delete();
         } else {
             if (!empty($data['uid'])) {
                 CommonController::log($data['msg'], 1, $data['uid']);
             } else {
                 CommonController::log($data['msg']);
             }
+            // 删除任务
+            $job->delete();
         }
-        // 删除任务
-        $job->delete();
     }
 }

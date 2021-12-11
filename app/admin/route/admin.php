@@ -48,9 +48,10 @@ Route::group('admin', function () {
     Route::get('list', 'list');
     Route::post('add', 'add');
     Route::put('edit', 'edit');
-    Route::get(':id', 'query');
     Route::delete('delete', 'delete');
     Route::put('status', 'statusEdit');
+    Route::get('log', 'logList');
+    Route::get('query/:id', 'query');
 })->prefix('AdminController/');
 
 /**
@@ -61,6 +62,34 @@ Route::group('group',function (){
     Route::post('add', 'add');
     Route::put('edit', 'edit');
     Route::delete('delete', 'delete');
-    Route::get('[:id]', 'query');
+    Route::get('query/[:id]', 'query');
     Route::put('status', 'statusEdit');
 })->prefix('GroupController/');
+
+/**
+ * 用户相关路由
+ */
+Route::group('user',function (){
+    Route::get('list', 'list');
+    Route::post('add', 'add');
+    Route::put('edit', 'edit');
+    Route::get('query/:id', 'query');
+    Route::delete('delete', 'delete');
+    Route::put('status', 'statusEdit');
+})->prefix('UserController/');
+
+/**
+ * 功能配置相关路由
+ */
+Route::group('functional',function (){
+    Route::get('pay','pay');
+    Route::put('pay','payEdit');
+    Route::get('sms','sms');
+    Route::put('sms','smsEdit');
+    Route::post('sms','testSms');
+    Route::get('email','email');
+    Route::put('email','emailEdit');
+    Route::post('email','testEmail');
+    Route::get('thirdparty','thirdparty');
+    Route::put('thirdparty','thirdpartyEdit');
+})->prefix('FunctionalController/');

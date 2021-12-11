@@ -1,6 +1,7 @@
 <?php
 // 应用公共文件
 
+use PHPMailer\PHPMailer\PHPMailer;
 use think\facade\Config;
 use think\facade\Request;
 use think\Response;
@@ -102,4 +103,69 @@ function send_sms(string $user, string $pass, string $content, string $phone): s
     $sendurl = $smsApi . "sms?u=" . $user . "&p=" . $pass . "&m=" . $phone . "&c=" . urlencode($content);
     $result = file_get_contents($sendurl);
     return $statusStr[$result];
+}
+
+/**
+ * 邮件发送
+ * @param string $email 登录邮箱
+ * @param string $emailpaswsd 安全码/授权码
+ * @param string $smtp 邮箱的服务器地址
+ * @param string $sll 端口
+ * @param string $emname 发件人昵称
+ * @param string $title 邮件主题
+ * @param string $content 邮件内容
+ * @param string $toemail 收件人邮箱
+ * @return bool
+ */
+function sendEmail(string $email, string $emailpaswsd, string $smtp, string $sll, string $emname, string $title, string $content, string $toemail): bool
+{
+    $mail = new PHPMailer(true);// Passing `true` enables exceptions
+    try {
+        //设定邮件编码
+        $mail->CharSet = "UTF-8";
+        // 调试模式输出
+        $mail->SMTPDebug = 0;
+        // 使用SMTP
+        $mail->isSMTP();
+        // SMTP服务器
+        $mail->Host = $smtp;
+        // 允许 SMTP 认证
+        $mail->SMTPAuth = true;
+        // SMTP 用户名  即邮箱的用户名
+        $mail->Username = $email;
+        // SMTP 密码  部分邮箱是授权码(例如163邮箱)
+        $mail->Password = $emailpaswsd;
+        // 允许 TLS 或者ssl协议
+        $mail->SMTPSecure = 'ssl';
+        // 服务器端口 25 或者465 具体要看邮箱服务器支持
+        $mail->Port = $sll;
+        //发件人
+        $mail->setFrom($email, $emname);
+        // 收件人
+        $mail->addAddress($toemail);
+        // 可添加多个收件人
+        //$mail->addAddress('ellen@example.com');
+        //回复的时候回复给哪个邮箱 建议和发件人一致
+        $mail->addReplyTo($toemail, $emname);
+        //抄送
+        //$mail->addCC('cc@example.com');
+        //密送
+        //$mail->addBCC('bcc@example.com');
+
+        //发送附件
+        // $mail->addAttachment('../xy.zip');// 添加附件
+        // $mail->addAttachment('../thumb-1.jpg', 'new.jpg');// 发送附件并且重命名
+
+        // 是否以HTML文档格式发送  发送后客户端可直接显示对应HTML内容
+        $mail->isHTML(true);
+        $mail->Subject = $title;
+        $mail->Body = $content;
+        $mail->AltBody = '当前邮件客户端不支持HTML，请用浏览器登录邮箱查看内容！';
+        // 发送邮件返回状态
+        $status = $mail->send();
+        return $status;
+    } catch (Exception $e) {
+        echo '邮件发送失败: ', $mail->ErrorInfo;
+        return false;
+    }
 }

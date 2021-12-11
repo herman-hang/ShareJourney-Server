@@ -29,7 +29,10 @@
         "yurunsoft/yurun-oauth-login": "^3.0",
         "edward1108/edward-captcha": "^1.1",
         "topthink/think-queue": "^3.0",
-      "ext-iconv": "*"
+      "ext-iconv": "*",
+        "topthink/think-api": "^1.0",
+      "ext-json": "*",
+        "phpmailer/phpmailer": "^6.5"
     },
     "require-dev": {
         "symfony/var-dumper": "^4.2",
