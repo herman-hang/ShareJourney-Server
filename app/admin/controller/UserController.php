@@ -178,4 +178,25 @@ class UserController extends CommonController
             show(403, "修改失败！");
         }
     }
+
+    /**
+     * 用户消费明细
+     * @throws \think\db\exception\DbException
+     */
+    public function buyLog()
+    {
+        // 接收数据
+        $data = Request::only(['keywords', 'per_page', 'current_page']);
+        //查询所有用户
+        $info = Db::name('user_buylog')
+            ->whereLike('indent|uid|start|end', "%" . $data['keywords'] . "%")
+            ->order('create_time', 'desc')
+            ->paginate([
+                'list_rows' => $data['per_page'],
+                'query' => request()->param(),
+                'var_page' => 'page',
+                'page' => $data['current_page']
+            ]);
+        show(200, "获取数据成功！", $info->toArray() ?? []);
+    }
 }

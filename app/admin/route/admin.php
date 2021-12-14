@@ -57,7 +57,7 @@ Route::group('admin', function () {
 /**
  * 权限组相关路由
  */
-Route::group('group',function (){
+Route::group('group', function () {
     Route::get('list', 'list');
     Route::post('add', 'add');
     Route::put('edit', 'edit');
@@ -69,27 +69,38 @@ Route::group('group',function (){
 /**
  * 用户相关路由
  */
-Route::group('user',function (){
+Route::group('user', function () {
     Route::get('list', 'list');
     Route::post('add', 'add');
     Route::put('edit', 'edit');
     Route::get('query/:id', 'query');
     Route::delete('delete', 'delete');
     Route::put('status', 'statusEdit');
+    Route::get('buylog', 'buylog');
 })->prefix('UserController/');
+
+/**
+ * 车主相关路由
+ */
+Route::group('owner', function () {
+    Route::get('list','list');
+    Route::put('status','statusEdit');
+    Route::put('edit','edit');
+    Route::get('query/:id', 'query');
+})->prefix('OwnerController/');
 
 /**
  * 功能配置相关路由
  */
-Route::group('functional',function (){
-    Route::get('pay','pay');
-    Route::put('pay','payEdit');
-    Route::get('sms','sms');
-    Route::put('sms','smsEdit');
-    Route::post('sms','testSms');
-    Route::get('email','email');
-    Route::put('email','emailEdit');
-    Route::post('email','testEmail');
-    Route::get('thirdparty','thirdparty');
-    Route::put('thirdparty','thirdpartyEdit');
+Route::group('functional', function () {
+    Route::get('pay', 'pay');
+    Route::put('pay', 'payEdit');
+    Route::get('sms', 'sms');
+    Route::put('sms', 'smsEdit');
+    Route::post('sms', 'testSms');
+    Route::get('email', 'email');
+    Route::put('email', 'emailEdit');
+    Route::post('email', 'testEmail');
+    Route::get('thirdparty', 'thirdparty');
+    Route::put('thirdparty', 'thirdpartyEdit');
 })->prefix('FunctionalController/');
