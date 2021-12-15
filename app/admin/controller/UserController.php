@@ -30,8 +30,7 @@ class UserController extends CommonController
         //查询所有用户
         $info = Db::name('user')
             ->whereLike('nickname|user|mobile|email', "%" . $data['keywords'] . "%")
-            ->withoutField(['wx_openid', 'qq_openid', 'weibo_openid', 'money', 'cause'])
-            ->where('is_owner', '0')
+            ->withoutField(['weixin_openid', 'gitee_openid', 'qq_openid', 'weibo_openid', 'money', 'cause', 'login_error', 'error_time', 'ban_time', 'lastlog_ip', 'lastlog_time', 'login_sum'])
             ->order('create_time', 'desc')
             ->paginate([
                 'list_rows' => $data['per_page'],

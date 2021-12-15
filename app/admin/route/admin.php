@@ -87,6 +87,14 @@ Route::group('owner', function () {
     Route::put('status','statusEdit');
     Route::put('edit','edit');
     Route::get('query/:id', 'query');
+    Route::get('withdraw/list', 'withdrawList');
+    Route::put('withdraw/pass', 'pass');
+    Route::put('withdraw/reject', 'reject');
+    Route::get('withdraw/query/:id', 'withdrawQuery');
+    Route::get('audit/list', 'auditList');
+    Route::get('audit/query/:id', 'auditQuery');
+    Route::put('audit/pass', 'auditPass');
+    Route::put('audit/reject', 'auditReject');
 })->prefix('OwnerController/');
 
 /**
