@@ -3,8 +3,10 @@ declare (strict_types = 1);
 
 namespace app;
 
+use think\api\Client;
 use think\App;
 use think\exception\ValidateException;
+use think\facade\Db;
 use think\Validate;
 
 /**

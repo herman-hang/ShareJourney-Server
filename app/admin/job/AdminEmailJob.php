@@ -17,7 +17,7 @@ use think\queue\Job;
 class AdminEmailJob
 {
     /**
-     * 邮件发送失败
+     * 邮件发送
      * @param Job $job 队列
      * @param array $data 业务参数
      */
@@ -25,7 +25,7 @@ class AdminEmailJob
     {
         if ($job->attempts() > 3) {
             //执行失败写入错误日志
-            Log::error('邮件发送队列错误');
+            Log::error('邮件发送队列失败！');
             //删除这个任务
             $job->delete();
         } else {
@@ -34,10 +34,12 @@ class AdminEmailJob
             $title = "这是邮件发送测试标题";
             $content = "我是邮件发送测试的内容！";
             //执行测试发送
-            $res = sendEmail($data['email'], $data['key'], $data['stmp'], $data['sll'], $name, $title, $content, $data['test_email']);
+            $res = send_email($data['email'], $data['key'], $data['stmp'], $data['sll'], $name, $title, $content, $data['test_email']);
             if (!$res){
                 Log::error("邮件发送失败！");
             }
+            // 删除任务
+            $job->delete();
         }
     }
 }

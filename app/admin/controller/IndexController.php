@@ -16,8 +16,40 @@ use think\facade\Db;
 
 class IndexController extends CommonController
 {
-    public function index()
+    /**
+     * 后台首页
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public function home()
     {
-
+        //菜单查询
+        $menu = Db::name('menu')->where(['pid' => 0, 'status' => 1])->field('id,name,url')->order('sort', 'desc')->select()->toArray();
+        $admin = Db::name('admin')->where('id', request()->uid)->field('role_id')->find();
+        $group = Db::name('group')->where('id', $admin['role_id'])->field('rules')->find();
+        //转数组
+        $groupArray = explode(',', $group['rules']);
+        if (request()->uid !== 1) {
+            foreach ($menu as $key => $val) {
+                if (in_array($val['id'], $groupArray)) {
+                    $subMenu = Db::name('menu')->where(['pid' => $val['id'], 'status' => 1])->field('id,name,url')->order('sort', 'desc')->select();
+                    foreach ($subMenu as $k => $va) {
+                        if (in_array($va['id'], $groupArray)) {
+                            $menu[$key]['children'][$k] = $va;
+                        }
+                    }
+                } else {
+                    //遍历删除无权限的规则，即不渲染
+                    unset($menu[$key]);
+                }
+            }
+        } else {//超级管理员
+            foreach ($menu as $key => $val) {
+                $subMenu = Db::name('menu')->where(['pid' => $val['id'], 'status' => 1])->field('name,url')->order('sort', 'desc')->select();
+                $menu[$key]['children'] = $subMenu;
+            }
+        }
+        show(200, '获取菜单成功！', $menu ?? []);
     }
 }

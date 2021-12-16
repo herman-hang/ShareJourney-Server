@@ -106,10 +106,10 @@ class FunctionalController extends CommonController
     {
         // 接收数据
         $data = Request::param();
-        $result = Queue::push('app\admin\job\AdminSmsJob',$data,'admin');
-        if ($result !== false){
+        $isPushed = Queue::push('app\admin\job\AdminSmsJob', $data, 'admin');
+        if ($isPushed !== false) {
             show(200, "发送成功！");
-        }else{
+        } else {
             show(403, "发送失败！");
         }
     }
@@ -151,8 +151,8 @@ class FunctionalController extends CommonController
     {
         //接收前台信息
         $data = Request::param();
-        $result = Queue::push('app\admin\job\AdminEmailJob',$data,'admin');
-        if ($result !== false) {
+        $isPushed = Queue::push('app\admin\job\AdminEmailJob', $data, 'admin');
+        if ($isPushed !== false) {
             show(200, "发送成功！");
         } else {
             show(403, "发送失败！");

@@ -108,16 +108,16 @@ function send_sms(string $user, string $pass, string $content, string $phone): s
 /**
  * 邮件发送
  * @param string $email 登录邮箱
- * @param string $emailpaswsd 安全码/授权码
+ * @param string $emailPassword 安全码/授权码
  * @param string $smtp 邮箱的服务器地址
  * @param string $sll 端口
- * @param string $emname 发件人昵称
+ * @param string $emailName 发件人昵称
  * @param string $title 邮件主题
  * @param string $content 邮件内容
- * @param string $toemail 收件人邮箱
+ * @param string $toEmail 收件人邮箱
  * @return bool
  */
-function sendEmail(string $email, string $emailpaswsd, string $smtp, string $sll, string $emname, string $title, string $content, string $toemail): bool
+function send_email(string $email, string $emailPassword, string $smtp, string $sll, string $emailName, string $title, string $content, string $toEmail): bool
 {
     $mail = new PHPMailer(true);// Passing `true` enables exceptions
     try {
@@ -134,19 +134,19 @@ function sendEmail(string $email, string $emailpaswsd, string $smtp, string $sll
         // SMTP 用户名  即邮箱的用户名
         $mail->Username = $email;
         // SMTP 密码  部分邮箱是授权码(例如163邮箱)
-        $mail->Password = $emailpaswsd;
+        $mail->Password = $emailPassword;
         // 允许 TLS 或者ssl协议
         $mail->SMTPSecure = 'ssl';
         // 服务器端口 25 或者465 具体要看邮箱服务器支持
         $mail->Port = $sll;
         //发件人
-        $mail->setFrom($email, $emname);
+        $mail->setFrom($email, $emailName);
         // 收件人
-        $mail->addAddress($toemail);
+        $mail->addAddress($toEmail);
         // 可添加多个收件人
         //$mail->addAddress('ellen@example.com');
         //回复的时候回复给哪个邮箱 建议和发件人一致
-        $mail->addReplyTo($toemail, $emname);
+        $mail->addReplyTo($toEmail, $emailName);
         //抄送
         //$mail->addCC('cc@example.com');
         //密送
@@ -168,4 +168,131 @@ function sendEmail(string $email, string $emailpaswsd, string $smtp, string $sll
         echo '邮件发送失败: ', $mail->ErrorInfo;
         return false;
     }
+}
+
+/**
+ * 邮件HTML模板
+ * @param string $domain 网站域名，带http/https
+ * @param string $logo 网站LOGO
+ * @param string $user 接收邮件用户名（本站）
+ * @param string $content 邮件内容
+ * @param string $name 网站名称
+ * @return mixed
+ */
+function email_html(string $domain, string $logo, string $user, string $content, string $name): string
+{
+    return <<<EOT
+<div style="position:relative;font-size:14px;height:auto;padding:15px 15px 10px 15px;z-index:1;zoom:1;line-height:1.7;"
+	class="body">
+	<div id="qm_con_body">
+		<div id="mailContentContainer" class="qmbox qm_con_body_content qqmail_webmail_only" style="">
+			<table style="font-family:'Microsoft YaHei';" width="800" cellspacing="0" cellpadding="0" border="0"
+				bgcolor="#ffffff" align="center">
+				<tbody>
+					<tr>
+						<td>
+							<table style="font-family:'Microsoft YaHei';" width="800" height="48" cellspacing="0"
+								cellpadding="0" border="0" bgcolor="#409EFF" align="center">
+								<tbody>
+									<tr>
+										<td border="0" style="padding-left:20px;" height="48"
+											align="center">
+											<a href="{$domain}" target="_blank">
+											<img src="{$logo}" alt="{$name}">
+											</a>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+
+						</td>
+					</tr>
+
+					<tr>
+						<td>
+							<table
+								style=" border:1px solid #edecec; border-top:none; padding:0 20px;font-size:14px;color:#333333;"
+								width="800" cellspacing="0" cellpadding="0" border="0" align="left">
+								<tbody>
+									<tr>
+										<td border="0" colspan="2"
+											style=" font-size:16px;vertical-align:bottom;font-family:'Microsoft YaHei';"
+											width="760" height="56" align="left">尊敬的
+											<a target="_blank"
+												style="font-size:16px; font-weight:bold;text-decoration: none;">{$user}</a>：
+										</td>
+									</tr>
+									<tr>
+										<td border="0" colspan="2" width="760" height="30" align="left">&nbsp;</td>
+									</tr>
+									<tr>
+										<td border="0"
+											style=" width:40px; text-align:left;vertical-align:middle; line-height:32px; float:left;"
+											width="40" valign="middle" height="32" align="left"></td>
+										<td border="0"
+											style=" width:720px; text-align:left;vertical-align:middle;line-height:32px;font-family:'Microsoft YaHei';"
+											width="720" valign="middle" height="32" align="left">
+											{$content}
+										</td>
+									</tr>
+
+									<tr>
+										<td colspan="2"
+											style="padding-bottom:16px; border-bottom:1px dashed #e5e5e5;font-family:'Microsoft YaHei';text-align: right;"
+											width="720" height="14">{$name}</td>
+									</tr>
+									<tr>
+										<td colspan="2"
+											style="padding:8px 0 28px;color:#999999; font-size:12px;font-family:'Microsoft YaHei';"
+											width="720" height="14">此为系统邮件请勿回复</td>
+									</tr>
+								</tbody>
+							</table>
+
+						</td>
+					</tr>
+				</tbody>
+			</table>
+
+			<style type="text/css">
+				.qmbox style,
+				.qmbox script,
+				.qmbox head,
+				.qmbox link,
+				.qmbox meta {
+					display: none !important;
+				}
+
+				.qmbox body {
+					margin: 0 auto;
+					padding: 0;
+					font-family: Microsoft Yahei, Tahoma, Arial;
+					color: #333333;
+					background-color: #fff;
+					font-size: 12px;
+				}
+
+				.qmbox a {
+					color: #00a2ca;
+					line-height: 22px;
+					text-decoration: none;
+				}
+
+				.qmbox a:hover {
+					text-decoration: underline;
+					color: #00a2ca;
+				}
+
+				.qmbox td {
+					font-family: 'Microsoft YaHei';
+				}
+
+				#mailContentContainer .txt {
+					height: auto;
+				}
+			</style>
+		</div>
+	</div>
+</div>
+EOT;
 }

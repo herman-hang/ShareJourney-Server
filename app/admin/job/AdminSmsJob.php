@@ -69,6 +69,8 @@ class AdminSmsJob
             if ($res !== 0) {
                 Log::error("发送失败");
             }
+            // 删除任务
+            $job->delete();
         }
     }
 }
