@@ -42,9 +42,9 @@ class SendSmsJob
                 $client = new Client($sms['app_code']);
                 $client->smsSend()
                     ->withSignId($sms['sign_id'])
-                    ->withTemplateId($data['tempId'])
+                    ->withTemplateId($data['temp_id'])
                     ->withPhone($data['mobile'])
-                    ->withParams(json_encode(['code' => $data['code']]))
+                    ->withParams(json_encode($data['params'])) // $data['params']此参数为一个数组
                     ->request();
             } else if ($data['type'] == 1) {
                 //调用发送函数

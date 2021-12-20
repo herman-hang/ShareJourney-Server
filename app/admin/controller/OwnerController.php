@@ -15,6 +15,7 @@ use app\admin\model\UserOwnerModel;
 use app\admin\validate\OwnerValidate;
 use think\facade\Db;
 use think\facade\Request;
+use think\facade\Queue;
 
 class OwnerController extends CommonController
 {
@@ -128,6 +129,34 @@ class OwnerController extends CommonController
         $id = Request::param('id');
         $res = Db::name('owner_withdraw')->where('id', $id)->update(['status' => '1']);
         if ($res) {
+            // 构造信息，发送通知邮件
+            $info = Db::name('owner_withdraw')->where('id', $id)->find();
+            $user = Db::name('user')->where('id', $info['user_id'])->field('email,user,mobile')->find();
+            $system = Db::name('system')->where('id', '1')->field('name')->find();
+            $emailData['title'] = "恭喜您，提现成功！";
+            $emailData['email'] = $user['email'];
+            $emailData['user'] = $user['user'];
+            $time = date("Y-m-d H:i:s", $info['create_time']);
+            $emailData['content'] = "您在 <strong>{$system['name']}</strong> {$time}有一笔<strong style='font-size: 16px'>{$info['money']}元</strong>的提现订单已经通过审核，请登录{$system['name']}进行查看！";
+            // 发送通知邮件
+            if (!empty($user['email'])) {
+                Queue::push('app\job\SendEmailJob', $emailData, 'admin');
+            }
+
+            // 构造信息，发送短信
+            $sms = Db::name('sms')->where('id', 1)->field('sms_type,withdraw_pass_id')->find();
+            if ($sms['sms_type'] == '0') { // ThinkAPI
+                $smsData['temp_id'] = $sms['sms_withdraw_id'];
+                $smsData['type'] = 0;
+                $smsData['params'] = ['money' => $info['money']];
+            } else { // 短信宝
+                $smsData['content'] = "【{$system['name']}】您有一笔{$info['money']}元的提现订单已经审核通过，请注意查收！";
+                $smsData['type'] = 1;
+            }
+            $smsData['mobile'] = $user['mobile'];
+            if (!empty($user['mobile']) && !empty($smsData)) {
+                Queue::push('app\job\SendSmsJob', $smsData, 'admin');
+            }
             show(200, '审核成功！');
         } else {
             show(403, '审核失败！');
@@ -143,6 +172,34 @@ class OwnerController extends CommonController
         $data = Request::only(['id', 'cause']);
         $res = Db::name('owner_withdraw')->where('id', $data['id'])->update(['status' => '2', 'cause' => $data['cause']]);
         if ($res) {
+            // 构造信息，发送通知邮件
+            $info = Db::name('owner_withdraw')->where('id', $data['id'])->find();
+            $user = Db::name('user')->where('id', $info['user_id'])->field('email,user,mobile')->find();
+            $system = Db::name('system')->where('id', '1')->field('name')->find();
+            $emailData['title'] = "抱歉，提现失败！";
+            $emailData['email'] = $user['email'];
+            $emailData['user'] = $user['user'];
+            $time = date("Y-m-d H:i:s", $info['create_time']);
+            $emailData['content'] = "抱歉！您在 <strong>{$system['name']}</strong> {$time}有一笔<strong style='font-size: 16px'>{$info['money']}元</strong>的提现订单已经被驳回，请登录{$system['name']}查看驳回原因，并按要求修改后重新提交！";
+            // 发送通知邮件
+            if (!empty($user['email'])) {
+                Queue::push('app\job\SendEmailJob', $emailData, 'admin');
+            }
+
+            // 构造信息，发送短信
+            $sms = Db::name('sms')->where('id', 1)->field('sms_type,withdraw_reject_id')->find();
+            if ($sms['sms_type'] == '0') { // ThinkAPI
+                $smsData['temp_id'] = $sms['sms_withdraw_id'];
+                $smsData['type'] = 0;
+                $smsData['params'] = ['money' => $info['money']];
+            } else { // 短信宝
+                $smsData['content'] = "【{$system['name']}】您有一笔{$info['money']}元的提现订单已经被驳回，请登录查看原因！";
+                $smsData['type'] = 1;
+            }
+            $smsData['mobile'] = $user['mobile'];
+            if (!empty($user['mobile']) && !empty($smsData)) {
+                Queue::push('app\job\SendSmsJob', $smsData, 'admin');
+            }
             show(200, '驳回成功！');
         } else {
             show(403, '驳回失败！');
@@ -216,8 +273,33 @@ class OwnerController extends CommonController
         // 状态改为车主
         $res = Db::name('user')->where('id', $id)->update(['is_owner' => '2']);
         if ($res) {
+            // 构造信息，发送通知邮件
+            $user = Db::name('user')->where('id', $id)->field('email,user,mobile')->find();
+            $system = Db::name('system')->where('id', '1')->field('name')->find();
+            $emailData['title'] = "恭喜您成为车主！";
+            $emailData['email'] = $user['email'];
+            $emailData['user'] = $user['user'];
+            $emailData['content'] = "您在 <strong>{$system['name']}</strong> 申请成为车主的请求已经被我们审核通过，请登录{$system['name']}进行查看！";
+            // 发送通知邮件
+            if (!empty($user['email'])) {
+                Queue::push('app\job\SendEmailJob', $emailData, 'admin');
+            }
+            // 构造信息，发送短信
+            $sms = Db::name('sms')->where('id', 1)->field('sms_type,owner_pass_id')->find();
+            if ($sms['sms_type'] == '0') { // ThinkAPI
+                $smsData['temp_id'] = $sms['sms_withdraw_id'];
+                $smsData['type'] = 0;
+                $smsData['params'] = [];
+            } else { // 短信宝
+                $smsData['content'] = "【{$system['name']}】您申请成为车主的请求已经审核通过，请登录查看！";
+                $smsData['type'] = 1;
+            }
+            $smsData['mobile'] = $user['mobile'];
+            if (!empty($user['mobile']) && !empty($smsData)) {
+                Queue::push('app\job\SendSmsJob', $smsData, 'admin');
+            }
             // 状态改为正常
-            Db::name('user_owner')->where('user_id',$id)->update(['status'=>'1']);
+            Db::name('user_owner')->where('user_id', $id)->update(['status' => '1']);
             show(200, '审核成功！');
         } else {
             show(403, '审核失败！');
@@ -233,6 +315,31 @@ class OwnerController extends CommonController
         $data = Request::only(['id', 'cause']);
         $res = Db::name('user')->where('id', $data['id'])->update(['is_owner' => '3', 'cause' => $data['cause']]);
         if ($res) {
+            // 构造信息，发送通知邮件
+            $user = Db::name('user')->where('id', $data['id'])->field('email,user,mobile')->find();
+            $system = Db::name('system')->where('id', '1')->field('name')->find();
+            $emailData['title'] = "抱歉，审核失败！";
+            $emailData['email'] = $user['email'];
+            $emailData['user'] = $user['user'];
+            $emailData['content'] = "您在 <strong>{$system['name']}</strong> 申请成为车主的请求已经被我们驳回，请登录{$system['name']}查看驳回原因，并按要求修改后重新提交！";
+            // 发送通知邮件
+            if (!empty($user['email'])) {
+                Queue::push('app\job\SendEmailJob', $emailData, 'admin');
+            }
+            // 构造信息，发送短信
+            $sms = Db::name('sms')->where('id', 1)->field('sms_type,owner_reject_id')->find();
+            if ($sms['sms_type'] == '0') { // ThinkAPI
+                $smsData['temp_id'] = $sms['sms_withdraw_id'];
+                $smsData['type'] = 0;
+                $smsData['params'] = [];
+            } else { // 短信宝
+                $smsData['content'] = "【{$system['name']}】您申请成为车主的请求已经被驳回，请登录查看！";
+                $smsData['type'] = 1;
+            }
+            $smsData['mobile'] = $user['mobile'];
+            if (!empty($user['mobile']) && !empty($smsData)) {
+                Queue::push('app\job\SendSmsJob', $smsData, 'admin');
+            }
             show(200, '驳回成功！');
         } else {
             show(403, '驳回失败！');
