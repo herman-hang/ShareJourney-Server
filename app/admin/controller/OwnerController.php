@@ -133,7 +133,7 @@ class OwnerController extends CommonController
             $info = Db::name('owner_withdraw')->where('id', $id)->find();
             $user = Db::name('user')->where('id', $info['user_id'])->field('email,user,mobile')->find();
             $system = Db::name('system')->where('id', '1')->field('name')->find();
-            $emailData['title'] = "恭喜您，提现成功！";
+            $emailData['title'] = "恭喜您，提现成功";
             $emailData['email'] = $user['email'];
             $emailData['user'] = $user['user'];
             $time = date("Y-m-d H:i:s", $info['create_time']);
@@ -146,11 +146,11 @@ class OwnerController extends CommonController
             // 构造信息，发送短信
             $sms = Db::name('sms')->where('id', 1)->field('sms_type,withdraw_pass_id')->find();
             if ($sms['sms_type'] == '0') { // ThinkAPI
-                $smsData['temp_id'] = $sms['sms_withdraw_id'];
+                $smsData['temp_id'] = $sms['withdraw_pass_id'];
                 $smsData['type'] = 0;
                 $smsData['params'] = ['money' => $info['money']];
             } else { // 短信宝
-                $smsData['content'] = "【{$system['name']}】您有一笔{$info['money']}元的提现订单已经审核通过，请注意查收！";
+                $smsData['content'] = "【{$system['name']}】恭喜您有一笔{$info['money']}元的提现订单已经审核通过，更多详情请登录{$system['name']}查看。";
                 $smsData['type'] = 1;
             }
             $smsData['mobile'] = $user['mobile'];
@@ -176,7 +176,7 @@ class OwnerController extends CommonController
             $info = Db::name('owner_withdraw')->where('id', $data['id'])->find();
             $user = Db::name('user')->where('id', $info['user_id'])->field('email,user,mobile')->find();
             $system = Db::name('system')->where('id', '1')->field('name')->find();
-            $emailData['title'] = "抱歉，提现失败！";
+            $emailData['title'] = "抱歉，提现失败";
             $emailData['email'] = $user['email'];
             $emailData['user'] = $user['user'];
             $time = date("Y-m-d H:i:s", $info['create_time']);
@@ -189,11 +189,11 @@ class OwnerController extends CommonController
             // 构造信息，发送短信
             $sms = Db::name('sms')->where('id', 1)->field('sms_type,withdraw_reject_id')->find();
             if ($sms['sms_type'] == '0') { // ThinkAPI
-                $smsData['temp_id'] = $sms['sms_withdraw_id'];
+                $smsData['temp_id'] = $sms['withdraw_reject_id'];
                 $smsData['type'] = 0;
                 $smsData['params'] = ['money' => $info['money']];
             } else { // 短信宝
-                $smsData['content'] = "【{$system['name']}】您有一笔{$info['money']}元的提现订单已经被驳回，请登录查看原因！";
+                $smsData['content'] = "【{$system['name']}】很遗憾，您有一笔{$info['money']}元的提现订单已经被驳回，驳回原因请登录{$system['name']}进行查看。";
                 $smsData['type'] = 1;
             }
             $smsData['mobile'] = $user['mobile'];
@@ -276,7 +276,7 @@ class OwnerController extends CommonController
             // 构造信息，发送通知邮件
             $user = Db::name('user')->where('id', $id)->field('email,user,mobile')->find();
             $system = Db::name('system')->where('id', '1')->field('name')->find();
-            $emailData['title'] = "恭喜您成为车主！";
+            $emailData['title'] = "恭喜您成为车主";
             $emailData['email'] = $user['email'];
             $emailData['user'] = $user['user'];
             $emailData['content'] = "您在 <strong>{$system['name']}</strong> 申请成为车主的请求已经被我们审核通过，请登录{$system['name']}进行查看！";
@@ -287,11 +287,11 @@ class OwnerController extends CommonController
             // 构造信息，发送短信
             $sms = Db::name('sms')->where('id', 1)->field('sms_type,owner_pass_id')->find();
             if ($sms['sms_type'] == '0') { // ThinkAPI
-                $smsData['temp_id'] = $sms['sms_withdraw_id'];
+                $smsData['temp_id'] = $sms['owner_pass_id'];
                 $smsData['type'] = 0;
                 $smsData['params'] = [];
             } else { // 短信宝
-                $smsData['content'] = "【{$system['name']}】您申请成为车主的请求已经审核通过，请登录查看！";
+                $smsData['content'] = "【{$system['name']}】您申请成为车主的请求已经审核通过，更多详情请登录{$system['name']}查看！";
                 $smsData['type'] = 1;
             }
             $smsData['mobile'] = $user['mobile'];
@@ -318,7 +318,7 @@ class OwnerController extends CommonController
             // 构造信息，发送通知邮件
             $user = Db::name('user')->where('id', $data['id'])->field('email,user,mobile')->find();
             $system = Db::name('system')->where('id', '1')->field('name')->find();
-            $emailData['title'] = "抱歉，审核失败！";
+            $emailData['title'] = "抱歉，审核失败";
             $emailData['email'] = $user['email'];
             $emailData['user'] = $user['user'];
             $emailData['content'] = "您在 <strong>{$system['name']}</strong> 申请成为车主的请求已经被我们驳回，请登录{$system['name']}查看驳回原因，并按要求修改后重新提交！";
@@ -329,11 +329,11 @@ class OwnerController extends CommonController
             // 构造信息，发送短信
             $sms = Db::name('sms')->where('id', 1)->field('sms_type,owner_reject_id')->find();
             if ($sms['sms_type'] == '0') { // ThinkAPI
-                $smsData['temp_id'] = $sms['sms_withdraw_id'];
+                $smsData['temp_id'] = $sms['owner_reject_id'];
                 $smsData['type'] = 0;
                 $smsData['params'] = [];
             } else { // 短信宝
-                $smsData['content'] = "【{$system['name']}】您申请成为车主的请求已经被驳回，请登录查看！";
+                $smsData['content'] = "【{$system['name']}】很遗憾，您申请成为车主的请求已经被驳回，驳回原因请登录{$system['name']}查看！";
                 $smsData['type'] = 1;
             }
             $smsData['mobile'] = $user['mobile'];
