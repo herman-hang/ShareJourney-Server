@@ -71,7 +71,7 @@ class FunctionalController extends CommonController
     public function smsEdit()
     {
         // 接收数据
-        $data = Request::except(['phone', 'id']);
+        $data = Request::except(['phone', 'id', 'type']);
         // 验证数据
         $validate = new FunctionalValidate();
         if (!$validate->sceneSmsEdit()->check($data)) {
@@ -179,7 +179,7 @@ class FunctionalController extends CommonController
     public function thirdpartyEdit()
     {
         //接收前台传过来的值
-        $data = Request::except(['qq_callback', 'wx_callback', 'weibo_callback', 'gitee_callback', 'id']);
+        $data = Request::except(['wx_admin_callback', 'weibo_admin_callback', 'gitee_admin_callback', 'qq_admin_callback', 'id']);
         //执行更新操作
         $res = Db::name('thirdparty')->where('id', 1)->update($data);
         //判断是否操作成功，true为操作成功

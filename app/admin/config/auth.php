@@ -15,12 +15,17 @@ return [
         'LoginController/getCaptcha',//获取验证码
         'LoginController/oauth', // 第三方登录绑定
         'LoginController/getSwitch', // 获取快捷登录开关
+        'LoginController/system', // 获取快捷登录开关
         'OauthController/login', // 第三方登录
         'OauthController/callback', // 第三方登录回调地址
     ],
     // 后台需要登录，但是不需要验证权限的路由（控制器/方法）
     'is_login' => [
-        'CommonController/upload',
-        'CommonController/log',
+        'CommonController/upload', // 文件上传
+        'CommonController/log', // 日志记录
+        'Index/home',// 后台首页
+        'Index/welcome',// 我的桌面
+        'Index/clear',// 清除缓存
+        'Index/loginOut'// 退出登录
     ]
 ];

@@ -60,11 +60,11 @@ class UserController extends CommonController
         if ($res) {
             // 如果是车主，则在车主数据表添加一条数据
             if ($data['is_owner'] == '2') {
-                if (!$validate->sceneCheckOwner()->check($data)) {
+                if (!$validate->sceneCheckOwner()->check($data['owner'])) {
                     show(403, $validate->getError());
                 }
-                $data['user_id'] = $res->id;
-                UserOwnerModel::create($data);
+                $data['owner']['user_id'] = $res->id;
+                UserOwnerModel::create($data['owner']);
             }
             show(201, "添加成功！");
         } else {
@@ -96,16 +96,16 @@ class UserController extends CommonController
         }
         // 判断是否已经设置了车主，设置了则判断车主数据表是否存在数据，不存在则添加
         if ($data['is_owner'] == '2') {
-            if (!$validate->sceneCheckOwner()->check($data)) {
+            if (!$validate->sceneCheckOwner()->check($data['owner'])) {
                 show(403, $validate->getError());
             }
             $owner = Db::name('user_owner')->where('user_id', $data['id'])->field('id')->find();
             $data['user_id'] = $data['id'];
             if (empty($owner)) {
-                UserOwnerModel::create($data);
+                UserOwnerModel::create($data['owner']);
             } else {
                 $ownerModel = UserOwnerModel::find($owner['id']);
-                $ownerModel->save($data);
+                $ownerModel->save($data['owner']);
             }
         }
         $res = $user->save($data);
@@ -129,7 +129,7 @@ class UserController extends CommonController
         // 查询用户信息
         $info = Db::name('user')->withoutField(['weixin_openid', 'gitee_openid', 'qq_openid', 'weibo_openid', 'login_error', 'error_time', 'ban_time', 'lastlog_ip', 'lastlog_time', 'login_sum'])->where('id', $id)->find();
         // 查询车主信息
-        $info['owner'] = Db::name('user_owner')->where('user_id', $id)->find();
+        $info['owner'] = Db::name('user_owner')->where('user_id', $id)->field('id,user_id,service,km,patente_url,registration_url,car_url,plate_number,capacity,color')->find();
         show(200, "获取数据成功！", $info ?? []);
     }
 

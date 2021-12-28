@@ -10,6 +10,15 @@
 
 use think\facade\Route;
 
+/**
+ * 后台首页相关路由
+ */
+Route::group('index',function (){
+    Route::get('home', 'home');
+    Route::get('welcome', 'welcome');
+    Route::get('clear', 'clear');
+    Route::get('loginOut', 'loginOut');
+})->prefix('IndexController/');
 
 /**
  * 登录相关路由
@@ -18,7 +27,16 @@ Route::group('login', function () {
     Route::post('/', 'login');
     Route::get('switch', 'getSwitch');
     Route::get('captcha', 'getCaptcha');
+    Route::get('system', 'system');
 })->prefix('LoginController/');
+
+/**
+ * 第三方登录相关路由
+ */
+Route::group('oauth',function (){
+    Route::get('login/:type', 'login');
+    Route::get('callback/:type', 'callback');
+})->prefix('OauthController/');
 
 /**
  * 公共方法相关路由

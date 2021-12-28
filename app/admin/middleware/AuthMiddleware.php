@@ -16,6 +16,7 @@ use thans\jwt\facade\JWTAuth;
 use think\facade\Config;
 use think\facade\Db;
 use think\facade\Request;
+use think\Response;
 
 class AuthMiddleware
 {
@@ -69,11 +70,17 @@ class AuthMiddleware
                     // 记录退出的时间和IP地址
                     try {
                         $expToken = JWTAuth::auth(false);
+                        $id = $expToken['uid']->getValue();
+                        show(0, "登录超时！", [], $id);
                     } catch (JWTException $exception) {
-                        show(401, '未授权请求！');
+                        $result = [
+                            'code' => 401,
+                            'msg' => $exception->getMessage(),
+                            'time' => time(),
+                            'data' => [],
+                        ];
+                        throw new \think\exception\HttpResponseException(Response::create($result,'json'));
                     }
-                    $id = $expToken['uid']->getValue();
-                    show(0, "登录超时！", [], $id);
                 }
             }
         }

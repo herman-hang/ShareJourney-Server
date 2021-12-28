@@ -30,7 +30,7 @@ class GroupController extends CommonController
         $data = Request::only(['keywords', 'per_page', 'current_page']);
         if (empty($data)) {
             $all = Db::name('group')->field('id,name')->select();
-            show(200, "获取所有数据成功！", $all);
+            show(200, "获取所有数据成功！", $all->toArray() ?? []);
         }
         //如果当前为超级管理员，则输出全部权限组信息
         if (request()->uid == 1) {
@@ -42,7 +42,7 @@ class GroupController extends CommonController
                     'query' => request()->param(),
                     'var_page' => 'page',
                     'page' => $data['current_page']
-                ])->each(function ($item, $key) {
+                ])->each(function (&$item, $key) {
                     // 查询当前所有管理员用该权限组的user
                     $admin = Db::name('admin')->where('role_id', $item['id'])->field('user')->select();
                     $arr = [];
@@ -61,7 +61,7 @@ class GroupController extends CommonController
                     'query' => request()->param(),
                     'var_page' => 'page',
                     'page' => $data['current_page']
-                ])->each(function ($item, $key) {
+                ])->each(function (&$item, $key) {
                     // 查询当前所有管理员用该权限组的user
                     $admin = Db::name('admin')->where('role_id', $item['id'])->field('user')->select();
                     $arr = [];

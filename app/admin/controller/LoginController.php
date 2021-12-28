@@ -45,7 +45,7 @@ class LoginController extends CommonController
         } else {//管理员存在
             if ($admin['login_error'] == 0) {//不存在密码登录错误的情况
                 if ($admin['status'] == 0) {//管理员已停用
-                    show(403, '管理员已停用！');
+                    show(401, '管理员已停用！');
                 } else {//管理员状态正常（已启用状态）
                     //哈希加密
                     if (password_verify($data['password'], $admin['password'])) {//密码正确
@@ -93,7 +93,7 @@ class LoginController extends CommonController
                         //将封禁时间设置为空
                         $admin->save(['ban_time' => NULL]);
                         if ($admin['status'] == 0) {
-                            show(403, '管理员已停用！');
+                            show(401, '管理员已停用！');
                         } else {
                             if (password_verify($data['password'], $admin['password'])) {//密码正确
                                 //第三方登录绑定
@@ -274,5 +274,17 @@ class LoginController extends CommonController
         //删除数组中的key和code
         unset($code['key'], $code['code']);
         show(200, "获取验证码成功！", $code);
+    }
+
+    /**
+     * 获取系统信息
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public function system()
+    {
+        $system = Db::name('system')->where('id', 1)->field('copyright')->find();
+        show(200, "获取数据成功！", $system ?? []);
     }
 }

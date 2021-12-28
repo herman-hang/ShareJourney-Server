@@ -8,5 +8,7 @@ return [
     // Session初始化
     \think\middleware\SessionInit::class,
     // 设置跨域中间件
-    \app\middleware\CrossDomainMiddleware::class,
+//    \app\middleware\CrossDomainMiddleware::class,
+    // 设置跨域中间件
+    \app\middleware\CrossDomain::class,
 ];

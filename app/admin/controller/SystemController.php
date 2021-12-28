@@ -26,8 +26,8 @@ class SystemController extends CommonController
     public function system()
     {
         //当前系统信息
-        $system = Db::name('system')->where('id', 1)->withoutField('id,ip,max_logerror,file_storage,images_storage,access,version')->find();
-        show(200,"获取系统设置信息成功！",$system);
+        $system = Db::name('system')->where('id', 1)->withoutField('id,ip,max_logerror,file_storage,images_storage,access')->find();
+        show(200,"获取系统设置信息成功！",$system ?? []);
     }
 
     /**
@@ -63,7 +63,7 @@ class SystemController extends CommonController
     {
         //当前的信息
         $info = Db::name('system')->where('id', 1)->field('file_storage,max_logerror,ip,images_storage,access')->find();
-        show(200, "获取安全配置信息成功！", $info);
+        show(200, "获取安全配置信息成功！", $info ?? []);
     }
 
     /**
@@ -94,7 +94,7 @@ class SystemController extends CommonController
                         show(403, "修改后台入口失败！");
                     }
                 } else {
-                    show(403, "新后台入口非法，请更换其他入口尝试一下！");
+                    show(403, "新后台入口非法，请更换其他入口进行尝试！");
                 }
             }
         }
@@ -117,7 +117,7 @@ class SystemController extends CommonController
     {
         //查询所有开关信息
         $info = Db::name('switch')->where('id', 1)->withoutField('id,epay_switch')->find();
-        show(200, "获取开关信息成功！", $info);
+        show(200, "获取开关信息成功！", $info ?? []);
     }
 
     /**

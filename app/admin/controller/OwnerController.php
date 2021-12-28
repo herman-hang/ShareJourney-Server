@@ -29,7 +29,7 @@ class OwnerController extends CommonController
         $data = Request::only(['keywords', 'per_page', 'current_page']);
         //查询所有车主
         $info = Db::view('user', 'user,name,money,mobile,age,sex')
-            ->view('user_owner', 'id,service,km,status', 'user_owner.user_id=user.id')
+            ->view('user_owner', 'id,service,km,status,create_time,update_time', 'user_owner.user_id=user.id')
             ->whereLike('name|user|mobile', "%" . $data['keywords'] . "%")
             ->where('is_owner', '2')
             ->order('create_time', 'desc')
@@ -94,7 +94,10 @@ class OwnerController extends CommonController
     {
         $id = Request::param('id');
         // 查询车主信息
-        $info = Db::name('user_owner')->where('id', $id)->field(['id', 'service', 'km', 'patente_url', 'registration_url', 'car_url', 'plate_number', 'capacity', 'color', 'alipay', 'alipay_name', 'wxpay', 'wxpay_name', 'bank_card', 'bank_card_name', 'bank_card_type'])->find();
+        $info = Db::view('user_owner','*')
+            ->view('user','user','user.id=user_owner.user_id')
+            ->where('user_owner.id',$id)
+            ->find();
         show(200, "获取数据成功！", $info ?? []);
     }
 

@@ -6,7 +6,6 @@ use think\facade\Config;
 use think\facade\Request;
 use think\Response;
 use think\facade\Queue;
-
 /**
  * 返回数据函数
  * @param int $code 状态码
@@ -168,6 +167,33 @@ function send_email(string $email, string $emailPassword, string $smtp, string $
         echo '邮件发送失败: ', $mail->ErrorInfo;
         return false;
     }
+}
+/**
+ * 循环删除目录和文件
+ * @param string $dir_name
+ * @return bool
+ */
+function delete_dir_file($dir_name): bool
+{
+    $result = false;
+    if (is_dir($dir_name)) {
+        if ($handle = opendir($dir_name)) {
+            while (false !== ($item = readdir($handle))) {
+                if ($item != '.' && $item != '..') {
+                    if (is_dir($dir_name . DIRECTORY_SEPARATOR . $item)) {
+                        delete_dir_file($dir_name . DIRECTORY_SEPARATOR . $item);
+                    } else {
+                        unlink($dir_name . DIRECTORY_SEPARATOR . $item);
+                    }
+                }
+            }
+            closedir($handle);
+            if (rmdir($dir_name)) {
+                $result = true;
+            }
+        }
+    }
+    return $result;
 }
 
 /**

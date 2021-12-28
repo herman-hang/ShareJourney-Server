@@ -13,6 +13,7 @@ namespace app\admin\controller;
 
 use think\exception\HttpResponseException;
 use think\facade\Db;
+use think\facade\Request;
 
 class IndexController extends CommonController
 {
@@ -46,10 +47,43 @@ class IndexController extends CommonController
             }
         } else {//超级管理员
             foreach ($menu as $key => $val) {
-                $subMenu = Db::name('menu')->where(['pid' => $val['id'], 'status' => 1])->field('name,url')->order('sort', 'desc')->select();
+                $subMenu = Db::name('menu')->where(['pid' => $val['id'], 'status' => 1])->field('id,name,url')->order('sort', 'desc')->select();
                 $menu[$key]['children'] = $subMenu;
             }
         }
         show(200, '获取菜单成功！', $menu ?? []);
+    }
+
+    public function welcome()
+    {
+
+    }
+
+    /**
+     * 清除缓存
+     */
+    public function clear()
+    {
+        // 删除运行目录
+        if (delete_dir_file(root_path() . 'runtime')) {
+            show(200, "清除成功！");
+        } else {
+            show(200, "清除成功！");
+        }
+    }
+
+    /**
+     * 退出登录
+     * @throws \think\db\exception\DbException
+     */
+    public function loginOut()
+    {
+        // 更新
+        $res = Db::name('admin')->where('id', request()->uid)->update(['lastlog_time' => time(), 'lastlog_ip' => Request::ip()]);
+        if ($res) {
+            show(200, "退出成功！");
+        } else {
+            show(403, "退出失败！");
+        }
     }
 }

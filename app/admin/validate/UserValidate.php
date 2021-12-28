@@ -94,7 +94,7 @@ class UserValidate extends \think\Validate
      * 用户编辑
      * @return UserValidate
      */
-    public function sceneEdit()
+    public function sceneEdit(): UserValidate
     {
         return $this->only(['user', 'password', 'card', 'age', 'email', 'mobile', 'sex', 'is_developer', 'qq'])->remove('password', 'require');
     }
