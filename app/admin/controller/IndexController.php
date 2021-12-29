@@ -11,6 +11,8 @@
 namespace app\admin\controller;
 
 
+use thans\jwt\facade\JWTAuth;
+use thans\jwt\JWT;
 use think\exception\HttpResponseException;
 use think\facade\Db;
 use think\facade\Request;
@@ -26,7 +28,7 @@ class IndexController extends CommonController
     public function home()
     {
         //菜单查询
-        $menu = Db::name('menu')->where(['pid' => 0, 'status' => 1])->field('id,name,url')->order('sort', 'desc')->select()->toArray();
+        $menu = Db::name('menu')->where(['pid' => 0, 'status' => 1])->field('id,name')->order('sort', 'desc')->select()->toArray();
         $admin = Db::name('admin')->where('id', request()->uid)->field('role_id')->find();
         $group = Db::name('group')->where('id', $admin['role_id'])->field('rules')->find();
         //转数组
@@ -34,7 +36,7 @@ class IndexController extends CommonController
         if (request()->uid !== 1) {
             foreach ($menu as $key => $val) {
                 if (in_array($val['id'], $groupArray)) {
-                    $subMenu = Db::name('menu')->where(['pid' => $val['id'], 'status' => 1])->field('id,name,url')->order('sort', 'desc')->select();
+                    $subMenu = Db::name('menu')->where(['pid' => $val['id'], 'status' => 1])->field('id,name')->order('sort', 'desc')->select();
                     foreach ($subMenu as $k => $va) {
                         if (in_array($va['id'], $groupArray)) {
                             $menu[$key]['children'][$k] = $va;
@@ -47,7 +49,7 @@ class IndexController extends CommonController
             }
         } else {//超级管理员
             foreach ($menu as $key => $val) {
-                $subMenu = Db::name('menu')->where(['pid' => $val['id'], 'status' => 1])->field('id,name,url')->order('sort', 'desc')->select();
+                $subMenu = Db::name('menu')->where(['pid' => $val['id'], 'status' => 1])->field('id,name')->order('sort', 'desc')->select();
                 $menu[$key]['children'] = $subMenu;
             }
         }
@@ -78,6 +80,8 @@ class IndexController extends CommonController
      */
     public function loginOut()
     {
+        // 刷新token
+        JWTAuth::refresh();
         // 更新
         $res = Db::name('admin')->where('id', request()->uid)->update(['lastlog_time' => time(), 'lastlog_ip' => Request::ip()]);
         if ($res) {

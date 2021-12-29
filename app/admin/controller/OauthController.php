@@ -45,22 +45,22 @@ class OauthController extends CommonController
         switch ($type) {
             case "qq":
                 //定义回调地址
-                $callback = Request::domain() . "/" . $entry[0] . "/oauth/callback/type/qq";
+                $callback = Request::domain() . "/" . $entry[0] . "/oauth/callback/qq";
                 $OAuth = new \Yurun\OAuthLogin\QQ\OAuth2($info['qq_appid'], $info['qq_secret'], $callback);
                 break;
             case "weixin":
                 //定义回调地址
-                $callback = Request::domain() . "/" . $entry[0] . "/oauth/callback/type/weixin";
+                $callback = Request::domain() . "/" . $entry[0] . "/oauth/callback/weixin";
                 $OAuth = new \Yurun\OAuthLogin\Weixin\OAuth2($info['wx_appid'], $info['wx_secret'], $callback);
                 break;
             case "sina":
                 //定义回调地址
-                $callback = Request::domain() . "/" . $entry[0] . "/oauth/callback/type/sina";
+                $callback = Request::domain() . "/" . $entry[0] . "/oauth/callback/sina";
                 $OAuth = new \Yurun\OAuthLogin\Weibo\OAuth2($info['weibo_appid'], $info['weibo_secret'], $callback);
                 break;
             case "gitee":
                 //定义回调地址
-                $callback = Request::domain() . "/" . $entry[0] . "/oauth/callback/type/gitee";
+                $callback = Request::domain() . "/" . $entry[0] . "/oauth/callback/gitee";
                 $OAuth = new \Yurun\OAuthLogin\Gitee\OAuth2($info['gitee_appid'], $info['gitee_secret'], $callback);
                 break;
             default:
@@ -95,7 +95,7 @@ class OauthController extends CommonController
             case "qq":
                 $loginType = "QQ";
                 //定义回调地址
-                $callback = Request::domain() . "/" . $entry[0] . "/oauth/callback/type/qq";
+                $callback = Request::domain() . "/" . $entry[0] . "/oauth/callback/qq";
                 $OAuth = new \Yurun\OAuthLogin\QQ\OAuth2($info['qq_appid'], $info['qq_secret'], $callback);
                 // 获取accessToken
                 $accessToken = $OAuth->getAccessToken($state);
@@ -110,7 +110,7 @@ class OauthController extends CommonController
             case "weixin":
                 $loginType = "微信";
                 //定义回调地址
-                $callback = Request::domain() . "/" . $entry[0] . "/oauth/callback/type/weixin";
+                $callback = Request::domain() . "/" . $entry[0] . "/oauth/callback/weixin";
                 $OAuth = new \Yurun\OAuthLogin\Weixin\OAuth2($info['wx_appid'], $info['wx_secret'], $callback);
                 // 获取accessToken
                 $accessToken = $OAuth->getAccessToken($state);
@@ -125,7 +125,7 @@ class OauthController extends CommonController
             case "sina":
                 $loginType = "微博";
                 //定义回调地址
-                $callback = Request::domain() . "/" . $entry[0] . "/oauth/callback/type/sina";
+                $callback = Request::domain() . "/" . $entry[0] . "/oauth/callback/sina";
                 $OAuth = new \Yurun\OAuthLogin\Weibo\OAuth2($info['weibo_appid'], $info['weibo_secret'], $callback);
                 // 获取accessToken
                 $accessToken = $OAuth->getAccessToken($state);
@@ -140,7 +140,7 @@ class OauthController extends CommonController
             case "gitee":
                 $loginType = "Gitee";
                 //定义回调地址
-                $callback = Request::domain() . "/" . $entry[0] . "/oauth/callback/type/gitee";
+                $callback = Request::domain() . "/" . $entry[0] . "/oauth/callback/gitee";
                 $OAuth = new \Yurun\OAuthLogin\Gitee\OAuth2($info['gitee_appid'], $info['gitee_secret'], $callback);
                 // 获取accessToken
                 $accessToken = $OAuth->getAccessToken($state);
@@ -158,7 +158,6 @@ class OauthController extends CommonController
                 show(400, '非法请求！');
         }
         if (!empty($accessToken)) {
-            $system = Db::name('system')->where('id', 1)->field('access')->find();
             //判断是否已经是管理员
             if (!empty($admin)) {
                 //参数为用户认证的信息，请自行添加
@@ -167,13 +166,13 @@ class OauthController extends CommonController
                 Db::name('admin')->where('id', $admin['id'])->Inc('login_sum');
                 //记录日志
                 self::log("使用{$loginType}快捷登录成功！", 1, $admin['id']);
-                return view('loading', ['token' => 'bearer ' . $token]);
+                return view('oauth/loading', ['token' => 'bearer ' . $token]);
             } else {
                 //设置openid的缓存,方便登录成功后进行绑定
                 $oauth['type'] = $type;
                 $oauth['openid'] = $openid;
                 Cache::set('oauth_' . Request::ip(), $oauth, 600);
-                return view('loading', ['token' => '']);
+                return view('oauth/loading', ['token' => '']);
             }
         } else {
             show(500, '获取第三方用户信息失败！');
