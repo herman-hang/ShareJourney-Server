@@ -130,3 +130,10 @@ Route::group('functional', function () {
     Route::get('thirdparty', 'thirdparty');
     Route::put('thirdparty', 'thirdpartyEdit');
 })->prefix('FunctionalController/');
+
+Route::group('journey', function () {
+    Route::get('list', 'list');
+    Route::get('query/:id', 'query');
+    Route::get('timeLine/:id', 'timeLine');
+    Route::delete('delete', 'delete');
+})->prefix('JourneyController/');

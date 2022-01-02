@@ -151,7 +151,7 @@ class UserController extends CommonController
         // 删除操作
         $res = Db::name('user')->delete($array);
         if ($res) {
-            Db::name('user_owner')->delete($array);
+            Db::name('user_owner')->whereIn('user_id',$array)->delete();
             show(200, "删除成功！");
         } else {
             show(200, "删除失败！");

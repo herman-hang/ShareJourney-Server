@@ -163,7 +163,7 @@ class OauthController extends CommonController
                 //参数为用户认证的信息，请自行添加
                 $token = JWTAuth::builder(['uid' => $admin['id']]);
                 //登录总次数自增1
-                Db::name('admin')->where('id', $admin['id'])->Inc('login_sum');
+                Db::name('admin')->where('id', $admin['id'])->Inc('login_sum')->update();
                 //记录日志
                 self::log("使用{$loginType}快捷登录成功！", 1, $admin['id']);
                 return view('oauth/loading', ['token' => 'bearer ' . $token]);

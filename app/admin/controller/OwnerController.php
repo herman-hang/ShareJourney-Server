@@ -111,7 +111,7 @@ class OwnerController extends CommonController
         $data = Request::only(['keywords', 'per_page', 'current_page', 'status']);
         $info = Db::name('owner_withdraw')
             ->field('id,money,create_time,cause,indent,withdraw_account,status,user_id,owner_id')
-            ->where('status', $data['status'])
+            ->where('status','in', $data['status'])
             ->whereLike('indent', "%" . $data['keywords'] . "%")
             ->order('create_time', 'desc')
             ->paginate([
@@ -234,8 +234,8 @@ class OwnerController extends CommonController
     {
         // 接收数据
         $data = Request::only(['keywords', 'per_page', 'current_page']);
-        $info = Db::view('user', 'id,user,name,sex,age,mobile,is_owner')
-            ->view('user_owner', 'service,km,create_time,update_time', 'user_owner.user_id=user.id')
+        $info = Db::view('user', 'id as uid,user,name,sex,age,mobile,is_owner,cause')
+            ->view('user_owner', 'id,service,km,create_time,update_time', 'user_owner.user_id=user.id')
             ->where('user.is_owner', 'in', '1,3')
             ->whereLike('user|name|mobile', "%" . $data['keywords'] . "%")
             ->order('user_owner.create_time', 'desc')
@@ -259,8 +259,8 @@ class OwnerController extends CommonController
         // 接收ID
         $id = Request::param('id');
         // 关联查询
-        $info = Db::view('user_owner', 'service,km,patente_url,registration_url,car_url,plate_number,capacity,color')
-            ->view('user', 'user,name,card', 'user.id=user_owner.user_id')
+        $info = Db::view('user_owner', 'service,km,patente_url,registration_url,car_url,plate_number,capacity,color,create_time')
+            ->view('user', 'id,user,name,card', 'user.id=user_owner.user_id')
             ->where('user_owner.id', $id)
             ->find();
         show(200, "获取数据成功！", $info);
