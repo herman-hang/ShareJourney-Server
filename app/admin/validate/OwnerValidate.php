@@ -19,7 +19,7 @@ class OwnerValidate extends \think\Validate
         'patente_url'   =>  'require',
         'registration_url'  =>  'require',
         'car_url'   =>  'require',
-        'plate_number'  =>  'require|alphaNum',
+        'plate_number'  =>  'require',
         'capacity'      =>  'require|number',
         'color'     =>  'require'
     ];
@@ -32,7 +32,6 @@ class OwnerValidate extends \think\Validate
         'registration_url.require'  =>  '请上传行驶证！',
         'car_url.require'   =>  '请上传车辆图片！',
         'plate_number.require'  =>  '车辆号不能为空！',
-        'plate_number.alphaNum'  =>  '车辆号只能由数字和字母组成！',
         'capacity.require'   => '请填写可载人数！',
         'capacity.number'   =>  '可载人数只能是数字！',
         'color.require'     =>  '车辆颜色不能为空'

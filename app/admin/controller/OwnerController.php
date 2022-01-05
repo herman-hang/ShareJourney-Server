@@ -188,7 +188,6 @@ class OwnerController extends CommonController
             if (!empty($user['email'])) {
                 Queue::push('app\job\SendEmailJob', $emailData, 'admin');
             }
-
             // 构造信息，发送短信
             $sms = Db::name('sms')->where('id', 1)->field('sms_type,withdraw_reject_id')->find();
             if ($sms['sms_type'] == '0') { // ThinkAPI
