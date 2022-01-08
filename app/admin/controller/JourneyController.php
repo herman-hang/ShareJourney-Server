@@ -30,9 +30,9 @@ class JourneyController extends CommonController
             ->order('create_time', 'desc')
             ->paginate([
                 'list_rows' => $data['per_page'],
-                'query' => request()->param(),
-                'var_page' => 'page',
-                'page' => $data['current_page']
+                'query'     => request()->param(),
+                'var_page'  => 'page',
+                'page'      => $data['current_page']
             ]);
         show(200, "获取数据成功！", $info->toArray() ?? []);
     }
@@ -46,7 +46,7 @@ class JourneyController extends CommonController
     public function query()
     {
         // 旅途ID
-        $id = Request::param('id');
+        $id   = Request::param('id');
         $info = Db::name('journey')->where('id', $id)->find();
         show(200, "获取数据成功！", $info);
     }
@@ -60,7 +60,7 @@ class JourneyController extends CommonController
     public function timeLine()
     {
         // 旅途ID
-        $id = Request::param('id');
+        $id   = Request::param('id');
         $info = Db::name('journey_pass')->where('journey_id', $id)->order('scheduled_time', 'asc')->select();
         show(200, "获取数据成功！", $info->toArray() ?? []);
     }
@@ -83,7 +83,7 @@ class JourneyController extends CommonController
         // 删除操作
         $res = Db::name('journey')->delete($array);
         if ($res) {
-            Db::name('journey_pass')->whereIn('journey_id',$array)->delete();
+            Db::name('journey_pass')->whereIn('journey_id', $array)->delete();
             show(200, "删除成功！");
         } else {
             show(200, "删除失败！");

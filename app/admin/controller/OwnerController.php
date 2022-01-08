@@ -35,9 +35,9 @@ class OwnerController extends CommonController
             ->order('create_time', 'desc')
             ->paginate([
                 'list_rows' => $data['per_page'],
-                'query' => request()->param(),
-                'var_page' => 'page',
-                'page' => $data['current_page']
+                'query'     => request()->param(),
+                'var_page'  => 'page',
+                'page'      => $data['current_page']
             ]);
         show(200, "获取数据成功！", $info->toArray() ?? []);
     }
@@ -54,7 +54,7 @@ class OwnerController extends CommonController
         $data = Request::only(['id', 'status']);
         // 执行更新
         $user = UserOwnerModel::find($data['id']);
-        $res = $user->save($data);
+        $res  = $user->save($data);
         if ($res) {
             show(200, "修改成功！");
         } else {
@@ -94,9 +94,9 @@ class OwnerController extends CommonController
     {
         $id = Request::param('id');
         // 查询车主信息
-        $info = Db::view('user_owner','*')
-            ->view('user','user','user.id=user_owner.user_id')
-            ->where('user_owner.id',$id)
+        $info = Db::view('user_owner', '*')
+            ->view('user', 'user', 'user.id=user_owner.user_id')
+            ->where('user_owner.id', $id)
             ->find();
         show(200, "获取数据成功！", $info ?? []);
     }
@@ -111,14 +111,14 @@ class OwnerController extends CommonController
         $data = Request::only(['keywords', 'per_page', 'current_page', 'status']);
         $info = Db::name('owner_withdraw')
             ->field('id,money,create_time,cause,indent,withdraw_account,status,user_id,owner_id')
-            ->where('status','in', $data['status'])
+            ->where('status', 'in', $data['status'])
             ->whereLike('indent', "%" . $data['keywords'] . "%")
             ->order('create_time', 'desc')
             ->paginate([
                 'list_rows' => $data['per_page'],
-                'query' => request()->param(),
-                'var_page' => 'page',
-                'page' => $data['current_page']
+                'query'     => request()->param(),
+                'var_page'  => 'page',
+                'page'      => $data['current_page']
             ]);
         show(200, "获取数据成功！", $info->toArray() ?? []);
     }
@@ -129,17 +129,17 @@ class OwnerController extends CommonController
      */
     public function pass()
     {
-        $id = Request::param('id');
+        $id  = Request::param('id');
         $res = Db::name('owner_withdraw')->where('id', $id)->update(['status' => '1']);
         if ($res) {
             // 构造信息，发送通知邮件
-            $info = Db::name('owner_withdraw')->where('id', $id)->find();
-            $user = Db::name('user')->where('id', $info['user_id'])->field('email,user,mobile')->find();
-            $system = Db::name('system')->where('id', '1')->field('name')->find();
-            $emailData['title'] = "恭喜您，提现成功";
-            $emailData['email'] = $user['email'];
-            $emailData['user'] = $user['user'];
-            $time = date("Y-m-d H:i:s", $info['create_time']);
+            $info                 = Db::name('owner_withdraw')->where('id', $id)->find();
+            $user                 = Db::name('user')->where('id', $info['user_id'])->field('email,user,mobile')->find();
+            $system               = Db::name('system')->where('id', '1')->field('name')->find();
+            $emailData['title']   = "恭喜您，提现成功";
+            $emailData['email']   = $user['email'];
+            $emailData['user']    = $user['user'];
+            $time                 = date("Y-m-d H:i:s", $info['create_time']);
             $emailData['content'] = "您在 <strong>{$system['name']}</strong> {$time}有一笔<strong style='font-size: 16px'>{$info['money']}元</strong>的提现订单已经通过审核，请登录{$system['name']}进行查看！";
             // 发送通知邮件
             if (!empty($user['email'])) {
@@ -150,11 +150,11 @@ class OwnerController extends CommonController
             $sms = Db::name('sms')->where('id', 1)->field('sms_type,withdraw_pass_id')->find();
             if ($sms['sms_type'] == '0') { // ThinkAPI
                 $smsData['temp_id'] = $sms['withdraw_pass_id'];
-                $smsData['type'] = 0;
-                $smsData['params'] = ['money' => $info['money']];
+                $smsData['type']    = 0;
+                $smsData['params']  = ['money' => $info['money']];
             } else { // 短信宝
                 $smsData['content'] = "【{$system['name']}】恭喜您有一笔{$info['money']}元的提现订单已经审核通过，更多详情请登录{$system['name']}查看。";
-                $smsData['type'] = 1;
+                $smsData['type']    = 1;
             }
             $smsData['mobile'] = $user['mobile'];
             if (!empty($user['mobile']) && !empty($smsData)) {
@@ -173,16 +173,16 @@ class OwnerController extends CommonController
     public function reject()
     {
         $data = Request::only(['id', 'cause']);
-        $res = Db::name('owner_withdraw')->where('id', $data['id'])->update(['status' => '2', 'cause' => $data['cause']]);
+        $res  = Db::name('owner_withdraw')->where('id', $data['id'])->update(['status' => '2', 'cause' => $data['cause']]);
         if ($res) {
             // 构造信息，发送通知邮件
-            $info = Db::name('owner_withdraw')->where('id', $data['id'])->find();
-            $user = Db::name('user')->where('id', $info['user_id'])->field('email,user,mobile')->find();
-            $system = Db::name('system')->where('id', '1')->field('name')->find();
-            $emailData['title'] = "抱歉，提现失败";
-            $emailData['email'] = $user['email'];
-            $emailData['user'] = $user['user'];
-            $time = date("Y-m-d H:i:s", $info['create_time']);
+            $info                 = Db::name('owner_withdraw')->where('id', $data['id'])->find();
+            $user                 = Db::name('user')->where('id', $info['user_id'])->field('email,user,mobile')->find();
+            $system               = Db::name('system')->where('id', '1')->field('name')->find();
+            $emailData['title']   = "抱歉，提现失败";
+            $emailData['email']   = $user['email'];
+            $emailData['user']    = $user['user'];
+            $time                 = date("Y-m-d H:i:s", $info['create_time']);
             $emailData['content'] = "抱歉！您在 <strong>{$system['name']}</strong> {$time}有一笔<strong style='font-size: 16px'>{$info['money']}元</strong>的提现订单已经被驳回，请登录{$system['name']}查看驳回原因，并按要求修改后重新提交！";
             // 发送通知邮件
             if (!empty($user['email'])) {
@@ -192,11 +192,11 @@ class OwnerController extends CommonController
             $sms = Db::name('sms')->where('id', 1)->field('sms_type,withdraw_reject_id')->find();
             if ($sms['sms_type'] == '0') { // ThinkAPI
                 $smsData['temp_id'] = $sms['withdraw_reject_id'];
-                $smsData['type'] = 0;
-                $smsData['params'] = ['money' => $info['money']];
+                $smsData['type']    = 0;
+                $smsData['params']  = ['money' => $info['money']];
             } else { // 短信宝
                 $smsData['content'] = "【{$system['name']}】很遗憾，您有一笔{$info['money']}元的提现订单已经被驳回，驳回原因请登录{$system['name']}进行查看。";
-                $smsData['type'] = 1;
+                $smsData['type']    = 1;
             }
             $smsData['mobile'] = $user['mobile'];
             if (!empty($user['mobile']) && !empty($smsData)) {
@@ -216,7 +216,7 @@ class OwnerController extends CommonController
      */
     public function withdrawQuery()
     {
-        $id = Request::param('id');
+        $id   = Request::param('id');
         $info = Db::view('owner_withdraw', 'id,create_time,money as apply_money,indent,withdraw_account,status,cause')
             ->view('user', 'user,name,mobile,email,money,id as user_id', 'user.id=owner_withdraw.user_id')
             ->view('user_owner', 'id as owner_id,service,km,alipay,alipay_name,wxpay,wxpay_name,bank_card,bank_card_name,bank_card_type', 'user_owner.id=owner_withdraw.owner_id')
@@ -240,9 +240,9 @@ class OwnerController extends CommonController
             ->order('user_owner.create_time', 'desc')
             ->paginate([
                 'list_rows' => $data['per_page'],
-                'query' => request()->param(),
-                'var_page' => 'page',
-                'page' => $data['current_page']
+                'query'     => request()->param(),
+                'var_page'  => 'page',
+                'page'      => $data['current_page']
             ]);
         show(200, "获取数据成功！", $info->toArray() ?? []);
     }
@@ -276,11 +276,11 @@ class OwnerController extends CommonController
         $res = Db::name('user')->where('id', $id)->update(['is_owner' => '2']);
         if ($res) {
             // 构造信息，发送通知邮件
-            $user = Db::name('user')->where('id', $id)->field('email,user,mobile')->find();
-            $system = Db::name('system')->where('id', '1')->field('name')->find();
-            $emailData['title'] = "恭喜您成为车主";
-            $emailData['email'] = $user['email'];
-            $emailData['user'] = $user['user'];
+            $user                 = Db::name('user')->where('id', $id)->field('email,user,mobile')->find();
+            $system               = Db::name('system')->where('id', '1')->field('name')->find();
+            $emailData['title']   = "恭喜您成为车主";
+            $emailData['email']   = $user['email'];
+            $emailData['user']    = $user['user'];
             $emailData['content'] = "您在 <strong>{$system['name']}</strong> 申请成为车主的请求已经被我们审核通过，请登录{$system['name']}进行查看！";
             // 发送通知邮件
             if (!empty($user['email'])) {
@@ -290,11 +290,11 @@ class OwnerController extends CommonController
             $sms = Db::name('sms')->where('id', 1)->field('sms_type,owner_pass_id')->find();
             if ($sms['sms_type'] == '0') { // ThinkAPI
                 $smsData['temp_id'] = $sms['owner_pass_id'];
-                $smsData['type'] = 0;
-                $smsData['params'] = [];
+                $smsData['type']    = 0;
+                $smsData['params']  = [];
             } else { // 短信宝
                 $smsData['content'] = "【{$system['name']}】您申请成为车主的请求已经审核通过，更多详情请登录{$system['name']}查看！";
-                $smsData['type'] = 1;
+                $smsData['type']    = 1;
             }
             $smsData['mobile'] = $user['mobile'];
             if (!empty($user['mobile']) && !empty($smsData)) {
@@ -315,14 +315,14 @@ class OwnerController extends CommonController
     public function auditReject()
     {
         $data = Request::only(['id', 'cause']);
-        $res = Db::name('user')->where('id', $data['id'])->update(['is_owner' => '3', 'cause' => $data['cause']]);
+        $res  = Db::name('user')->where('id', $data['id'])->update(['is_owner' => '3', 'cause' => $data['cause']]);
         if ($res) {
             // 构造信息，发送通知邮件
-            $user = Db::name('user')->where('id', $data['id'])->field('email,user,mobile')->find();
-            $system = Db::name('system')->where('id', '1')->field('name')->find();
-            $emailData['title'] = "抱歉，审核失败";
-            $emailData['email'] = $user['email'];
-            $emailData['user'] = $user['user'];
+            $user                 = Db::name('user')->where('id', $data['id'])->field('email,user,mobile')->find();
+            $system               = Db::name('system')->where('id', '1')->field('name')->find();
+            $emailData['title']   = "抱歉，审核失败";
+            $emailData['email']   = $user['email'];
+            $emailData['user']    = $user['user'];
             $emailData['content'] = "您在 <strong>{$system['name']}</strong> 申请成为车主的请求已经被我们驳回，请登录{$system['name']}查看驳回原因，并按要求修改后重新提交！";
             // 发送通知邮件
             if (!empty($user['email'])) {
@@ -332,11 +332,11 @@ class OwnerController extends CommonController
             $sms = Db::name('sms')->where('id', 1)->field('sms_type,owner_reject_id')->find();
             if ($sms['sms_type'] == '0') { // ThinkAPI
                 $smsData['temp_id'] = $sms['owner_reject_id'];
-                $smsData['type'] = 0;
-                $smsData['params'] = [];
+                $smsData['type']    = 0;
+                $smsData['params']  = [];
             } else { // 短信宝
                 $smsData['content'] = "【{$system['name']}】很遗憾，您申请成为车主的请求已经被驳回，驳回原因请登录{$system['name']}查看！";
-                $smsData['type'] = 1;
+                $smsData['type']    = 1;
             }
             $smsData['mobile'] = $user['mobile'];
             if (!empty($user['mobile']) && !empty($smsData)) {

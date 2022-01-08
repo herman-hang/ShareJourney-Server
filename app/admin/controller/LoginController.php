@@ -114,7 +114,7 @@ class LoginController extends CommonController
                                 $errorCount = $admin->getData('login_error');
                                 //获取允许登录错误的最大次数
                                 $maxError = $system->getData('max_logerror');
-                                $count = $maxError - $errorCount;
+                                $count    = $maxError - $errorCount;
                                 //记录日志
                                 self::log("登录密码错误，还有{$count}次机会！", 1, $admin['id']);
                                 //调用生成验证码方法
@@ -170,7 +170,7 @@ class LoginController extends CommonController
                                     $errorCount = $admin->getData('login_error');
                                     //获取允许登录错误最大次数
                                     $maxError = $system->getData('max_logerror');
-                                    $count = $maxError - $errorCount;
+                                    $count    = $maxError - $errorCount;
                                     //记录日志
                                     self::log("密码错误，还有{$count}次机会！", 1, $admin['id']);
                                     //调用生成验证码方法

@@ -14,27 +14,27 @@ namespace app\admin\validate;
 class OwnerValidate extends \think\Validate
 {
     protected $rule = [
-        'service'   =>  'require|number',
-        'km'        =>  'require',
-        'patente_url'   =>  'require',
-        'registration_url'  =>  'require',
-        'car_url'   =>  'require',
-        'plate_number'  =>  'require',
-        'capacity'      =>  'require|number',
-        'color'     =>  'require'
+        'service'          => 'require|number',
+        'km'               => 'require',
+        'patente_url'      => 'require',
+        'registration_url' => 'require',
+        'car_url'          => 'require',
+        'plate_number'     => 'require',
+        'capacity'         => 'require|number',
+        'color'            => 'require'
     ];
 
     protected $message = [
-        'service.require'   =>  '平台服务费不能为空！',
-        'service.number'    =>  '平台服务费只能填写数字！',
-        'km.require'        =>  '请填写每公里收费！',
-        'patente_url.require'   =>  '请上传驾驶证！',
-        'registration_url.require'  =>  '请上传行驶证！',
-        'car_url.require'   =>  '请上传车辆图片！',
-        'plate_number.require'  =>  '车辆号不能为空！',
-        'capacity.require'   => '请填写可载人数！',
-        'capacity.number'   =>  '可载人数只能是数字！',
-        'color.require'     =>  '车辆颜色不能为空'
+        'service.require'          => '平台服务费不能为空！',
+        'service.number'           => '平台服务费只能填写数字！',
+        'km.require'               => '请填写每公里收费！',
+        'patente_url.require'      => '请上传驾驶证！',
+        'registration_url.require' => '请上传行驶证！',
+        'car_url.require'          => '请上传车辆图片！',
+        'plate_number.require'     => '车辆号不能为空！',
+        'capacity.require'         => '请填写可载人数！',
+        'capacity.number'          => '可载人数只能是数字！',
+        'color.require'            => '车辆颜色不能为空'
     ];
 
     /**
@@ -43,6 +43,15 @@ class OwnerValidate extends \think\Validate
      */
     public function sceneEdit(): OwnerValidate
     {
-        return $this->only(['service','km','patente_url','registration_url','car_url','plate_number','capacity','color']);
+        return $this->only([
+            'service',
+            'km',
+            'patente_url',
+            'registration_url',
+            'car_url',
+            'plate_number',
+            'capacity',
+            'color'
+        ]);
     }
 }

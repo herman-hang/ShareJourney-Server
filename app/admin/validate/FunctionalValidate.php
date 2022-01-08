@@ -20,9 +20,9 @@ class FunctionalValidate extends \think\Validate
      * @var array
      */
     protected $rule = [
-        'sms_type' => 'require',
-        'bind_mobile'=>'number',
-        'relieve_mobile'=>'number'
+        'sms_type'       => 'require',
+        'bind_mobile'    => 'number',
+        'relieve_mobile' => 'number'
     ];
 
     /**
@@ -32,10 +32,10 @@ class FunctionalValidate extends \think\Validate
      * @var array
      */
     protected $message = [
-        'alipay_type.require' => '请选择支付宝支付接口类型！',
-        'sms_type.require' => '请选择短信接口类型！',
-        'bind_mobile.number'=>'绑定手机号码模板ID必须是数字！',
-        'relieve_mobile.number'=>'解除手机号码模板ID必须是数字！'
+        'alipay_type.require'   => '请选择支付宝支付接口类型！',
+        'sms_type.require'      => '请选择短信接口类型！',
+        'bind_mobile.number'    => '绑定手机号码模板ID必须是数字！',
+        'relieve_mobile.number' => '解除手机号码模板ID必须是数字！'
     ];
 
     /**
@@ -44,6 +44,10 @@ class FunctionalValidate extends \think\Validate
      */
     public function sceneSmsEdit(): FunctionalValidate
     {
-        return $this->only(['sms_type','bind_mobile','relieve_mobile']);
+        return $this->only([
+            'sms_type',
+            'bind_mobile',
+            'relieve_mobile'
+        ]);
     }
 }

@@ -21,7 +21,7 @@ class AdminEmailJob
      * @param Job $job 队列
      * @param array $data 业务参数
      */
-    public function fire(Job $job,array $data)
+    public function fire(Job $job, array $data)
     {
         if ($job->attempts() > 3) {
             //执行失败写入错误日志
@@ -30,12 +30,12 @@ class AdminEmailJob
             $job->delete();
         } else {
             //数据模拟定义
-            $name = "我叫测试";
-            $title = "这是邮件发送测试标题";
+            $name    = "我叫测试";
+            $title   = "这是邮件发送测试标题";
             $content = "我是邮件发送测试的内容！";
             //执行测试发送
             $res = send_email($data['email'], $data['key'], $data['stmp'], $data['sll'], $name, $title, $content, $data['test_email']);
-            if (!$res){
+            if (!$res) {
                 Log::error("邮件发送失败！");
             }
             // 删除任务

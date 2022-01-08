@@ -34,9 +34,9 @@ class UserController extends CommonController
             ->order('create_time', 'desc')
             ->paginate([
                 'list_rows' => $data['per_page'],
-                'query' => request()->param(),
-                'var_page' => 'page',
-                'page' => $data['current_page']
+                'query'     => request()->param(),
+                'var_page'  => 'page',
+                'page'      => $data['current_page']
             ]);
         show(200, "获取数据成功！", $info->toArray() ?? []);
     }
@@ -99,7 +99,7 @@ class UserController extends CommonController
             if (!$validate->sceneCheckOwner()->check($data['owner'])) {
                 show(403, $validate->getError());
             }
-            $owner = Db::name('user_owner')->where('user_id', $data['id'])->field('id')->find();
+            $owner           = Db::name('user_owner')->where('user_id', $data['id'])->field('id')->find();
             $data['user_id'] = $data['id'];
             if (empty($owner)) {
                 UserOwnerModel::create($data['owner']);
@@ -127,7 +127,18 @@ class UserController extends CommonController
         // 接收用户ID
         $id = Request::param('id');
         // 查询用户信息
-        $info = Db::name('user')->withoutField(['weixin_openid', 'gitee_openid', 'qq_openid', 'weibo_openid', 'login_error', 'error_time', 'ban_time', 'lastlog_ip', 'lastlog_time', 'login_sum'])->where('id', $id)->find();
+        $info = Db::name('user')->withoutField([
+            'weixin_openid',
+            'gitee_openid',
+            'qq_openid',
+            'weibo_openid',
+            'login_error',
+            'error_time',
+            'ban_time',
+            'lastlog_ip',
+            'lastlog_time',
+            'login_sum'
+        ])->where('id', $id)->find();
         // 查询车主信息
         $info['owner'] = Db::name('user_owner')->where('user_id', $id)->field('id,user_id,service,km,patente_url,registration_url,car_url,plate_number,capacity,color')->find();
         show(200, "获取数据成功！", $info ?? []);
@@ -151,7 +162,7 @@ class UserController extends CommonController
         // 删除操作
         $res = Db::name('user')->delete($array);
         if ($res) {
-            Db::name('user_owner')->whereIn('user_id',$array)->delete();
+            Db::name('user_owner')->whereIn('user_id', $array)->delete();
             show(200, "删除成功！");
         } else {
             show(200, "删除失败！");
@@ -170,7 +181,7 @@ class UserController extends CommonController
         $data = Request::only(['id', 'status']);
         // 执行更新
         $user = UserModel::find($data['id']);
-        $res = $user->save($data);
+        $res  = $user->save($data);
         if ($res) {
             show(200, "修改成功！");
         } else {
@@ -192,9 +203,9 @@ class UserController extends CommonController
             ->order('create_time', 'desc')
             ->paginate([
                 'list_rows' => $data['per_page'],
-                'query' => request()->param(),
-                'var_page' => 'page',
-                'page' => $data['current_page']
+                'query'     => request()->param(),
+                'var_page'  => 'page',
+                'page'      => $data['current_page']
             ]);
         show(200, "获取数据成功！", $info->toArray() ?? []);
     }

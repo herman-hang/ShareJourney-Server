@@ -46,22 +46,22 @@ class OauthController extends CommonController
             case "qq":
                 //定义回调地址
                 $callback = Request::domain() . "/" . $entry[0] . "/oauth/callback/qq";
-                $OAuth = new \Yurun\OAuthLogin\QQ\OAuth2($info['qq_appid'], $info['qq_secret'], $callback);
+                $OAuth    = new \Yurun\OAuthLogin\QQ\OAuth2($info['qq_appid'], $info['qq_secret'], $callback);
                 break;
             case "weixin":
                 //定义回调地址
                 $callback = Request::domain() . "/" . $entry[0] . "/oauth/callback/weixin";
-                $OAuth = new \Yurun\OAuthLogin\Weixin\OAuth2($info['wx_appid'], $info['wx_secret'], $callback);
+                $OAuth    = new \Yurun\OAuthLogin\Weixin\OAuth2($info['wx_appid'], $info['wx_secret'], $callback);
                 break;
             case "sina":
                 //定义回调地址
                 $callback = Request::domain() . "/" . $entry[0] . "/oauth/callback/sina";
-                $OAuth = new \Yurun\OAuthLogin\Weibo\OAuth2($info['weibo_appid'], $info['weibo_secret'], $callback);
+                $OAuth    = new \Yurun\OAuthLogin\Weibo\OAuth2($info['weibo_appid'], $info['weibo_secret'], $callback);
                 break;
             case "gitee":
                 //定义回调地址
                 $callback = Request::domain() . "/" . $entry[0] . "/oauth/callback/gitee";
-                $OAuth = new \Yurun\OAuthLogin\Gitee\OAuth2($info['gitee_appid'], $info['gitee_secret'], $callback);
+                $OAuth    = new \Yurun\OAuthLogin\Gitee\OAuth2($info['gitee_appid'], $info['gitee_secret'], $callback);
                 break;
             default:
                 show(400, '非法请求！');
@@ -96,7 +96,7 @@ class OauthController extends CommonController
                 $loginType = "QQ";
                 //定义回调地址
                 $callback = Request::domain() . "/" . $entry[0] . "/oauth/callback/qq";
-                $OAuth = new \Yurun\OAuthLogin\QQ\OAuth2($info['qq_appid'], $info['qq_secret'], $callback);
+                $OAuth    = new \Yurun\OAuthLogin\QQ\OAuth2($info['qq_appid'], $info['qq_secret'], $callback);
                 // 获取accessToken
                 $accessToken = $OAuth->getAccessToken($state);
                 // 用户唯一标识
@@ -111,7 +111,7 @@ class OauthController extends CommonController
                 $loginType = "微信";
                 //定义回调地址
                 $callback = Request::domain() . "/" . $entry[0] . "/oauth/callback/weixin";
-                $OAuth = new \Yurun\OAuthLogin\Weixin\OAuth2($info['wx_appid'], $info['wx_secret'], $callback);
+                $OAuth    = new \Yurun\OAuthLogin\Weixin\OAuth2($info['wx_appid'], $info['wx_secret'], $callback);
                 // 获取accessToken
                 $accessToken = $OAuth->getAccessToken($state);
                 // 用户唯一标识
@@ -126,7 +126,7 @@ class OauthController extends CommonController
                 $loginType = "微博";
                 //定义回调地址
                 $callback = Request::domain() . "/" . $entry[0] . "/oauth/callback/sina";
-                $OAuth = new \Yurun\OAuthLogin\Weibo\OAuth2($info['weibo_appid'], $info['weibo_secret'], $callback);
+                $OAuth    = new \Yurun\OAuthLogin\Weibo\OAuth2($info['weibo_appid'], $info['weibo_secret'], $callback);
                 // 获取accessToken
                 $accessToken = $OAuth->getAccessToken($state);
                 // 用户唯一标识
@@ -141,7 +141,7 @@ class OauthController extends CommonController
                 $loginType = "Gitee";
                 //定义回调地址
                 $callback = Request::domain() . "/" . $entry[0] . "/oauth/callback/gitee";
-                $OAuth = new \Yurun\OAuthLogin\Gitee\OAuth2($info['gitee_appid'], $info['gitee_secret'], $callback);
+                $OAuth    = new \Yurun\OAuthLogin\Gitee\OAuth2($info['gitee_appid'], $info['gitee_secret'], $callback);
                 // 获取accessToken
                 $accessToken = $OAuth->getAccessToken($state);
                 // 用户信息
@@ -169,7 +169,7 @@ class OauthController extends CommonController
                 return view('oauth/loading', ['token' => 'bearer ' . $token]);
             } else {
                 //设置openid的缓存,方便登录成功后进行绑定
-                $oauth['type'] = $type;
+                $oauth['type']   = $type;
                 $oauth['openid'] = $openid;
                 Cache::set('oauth_' . Request::ip(), $oauth, 600);
                 return view('oauth/loading', ['token' => '']);

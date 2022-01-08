@@ -41,7 +41,13 @@ class CommonController extends BaseController
         //实例化对象
         $log = new AdminLogModel();
         //执行添加并过滤非数据表字段
-        $log->save(['type' => $type, 'admin_id' => $id !== 0 ? $id : request()->uid, 'content' => $content, 'ip' => Request::ip(), 'url' => Request::controller() . '/' . Request::action(), 'method' => Request::method()]);
+        $log->save([
+            'type'     => $type,
+            'admin_id' => $id !== 0 ? $id : request()->uid,
+            'content'  => $content, 'ip' => Request::ip(),
+            'url'      => Request::controller() . '/' . Request::action(),
+            'method'   => Request::method()
+        ]);
     }
 
     /**
@@ -59,7 +65,10 @@ class CommonController extends BaseController
         $system = Db::name('system')->where('id', 1)->field('file_storage,images_storage')->find();
         // 上传到本地服务器
         try {
-            validate(['image|图片' => 'filesize:1567800|fileExt:jpg,jpeg,png,gif,ico,bmp', 'file|文件' => 'fileExt:zip,rar,7z,tar,gz'])->check($files);
+            validate([
+                'image|图片' => 'filesize:1567800|fileExt:jpg,jpeg,png,gif,ico,bmp',
+                'file|文件'  => 'fileExt:zip,rar,7z,tar,gz'
+            ])->check($files);
             if (!is_array($files)) {
                 // 判断上传的是图片还是文件
                 if (isset($files['file'])) {
@@ -77,19 +86,19 @@ class CommonController extends BaseController
             switch ($type) {
                 case "0":
                     $disk = "public"; //存储在本地
-                    $url = request()->domain() . "/storage";
+                    $url  = request()->domain() . "/storage";
                     break;
                 case "1":
                     $disk = "aliyun"; //存储在阿里云
-                    $url = Config::get('filesystem.disks.aliyun.url');
+                    $url  = Config::get('filesystem.disks.aliyun.url');
                     break;
                 case "2":
                     $disk = "qcloud"; //存储在腾讯云
-                    $url = Config::get('filesystem.disks.qcloud.cdn');
+                    $url  = Config::get('filesystem.disks.qcloud.cdn');
                     break;
                 case "3":
                     $disk = "qiniu"; //存储在七牛云
-                    $url = Config::get('filesystem.disks.qiniu.url');
+                    $url  = Config::get('filesystem.disks.qiniu.url');
                     break;
                 default:
                     show(403, "请求错误！");
@@ -99,12 +108,12 @@ class CommonController extends BaseController
                 if (is_array($file)) {
                     foreach ($file as $f) {
                         // 获取文件扩展名作存储路径
-                        $fileType = $f->extension();
+                        $fileType   = $f->extension();
                         $saveName[] = $url . "/" . Filesystem::disk($disk)->putFile($fileType, $f);
                     }
                 } else {
                     // 获取文件扩展名作存储路径
-                    $fileType = $file->extension();
+                    $fileType   = $file->extension();
                     $saveName[] = $url . "/" . Filesystem::disk($disk)->putFile($fileType, $file);
                 }
             }

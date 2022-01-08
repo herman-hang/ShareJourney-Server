@@ -20,8 +20,8 @@ class GroupValidate extends \think\Validate
      * @var array
      */
     protected $rule = [
-        'name' => 'require',
-        'rules' => 'require',
+        'name'   => 'require',
+        'rules'  => 'require',
         'status' => 'require'
     ];
 
@@ -32,8 +32,8 @@ class GroupValidate extends \think\Validate
      * @var array
      */
     protected $message = [
-        'name.require' => '权限组名称不能为空！',
-        'rules.require' => '请选择权限！',
+        'name.require'   => '权限组名称不能为空！',
+        'rules.require'  => '请选择权限！',
         'status.require' => '请选中状态！'
     ];
 
@@ -43,7 +43,10 @@ class GroupValidate extends \think\Validate
      */
     public function sceneAdd(): GroupValidate
     {
-        return $this->only(['name', 'rules']);
+        return $this->only([
+            'name',
+            'rules'
+        ]);
     }
 
     /**
@@ -52,6 +55,8 @@ class GroupValidate extends \think\Validate
      */
     public function sceneEdit(): GroupValidate
     {
-        return $this->only(['status']);
+        return $this->only([
+            'status'
+        ]);
     }
 }

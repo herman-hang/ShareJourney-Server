@@ -105,7 +105,7 @@ class FunctionalController extends CommonController
     public function testSms()
     {
         // 接收数据
-        $data = Request::param();
+        $data     = Request::param();
         $isPushed = Queue::push('app\admin\job\AdminSmsJob', $data, 'admin');
         if ($isPushed !== false) {
             show(200, "发送成功！");
@@ -135,7 +135,7 @@ class FunctionalController extends CommonController
     {
         // 接收数据
         $data = Request::except(['test_email', 'id']);
-        $res = Db::name('email')->where('id', 1)->update($data);
+        $res  = Db::name('email')->where('id', 1)->update($data);
         //判断返回的值是否为true
         if ($res) {
             show(200, "修改成功！");
@@ -150,7 +150,7 @@ class FunctionalController extends CommonController
     public function testEmail()
     {
         //接收前台信息
-        $data = Request::param();
+        $data     = Request::param();
         $isPushed = Queue::push('app\admin\job\AdminEmailJob', $data, 'admin');
         if ($isPushed !== false) {
             show(200, "发送成功！");

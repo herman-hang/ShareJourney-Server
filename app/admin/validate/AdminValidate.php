@@ -20,17 +20,17 @@ class AdminValidate extends \think\Validate
      * @var array
      */
     protected $rule = [
-        'user' => 'require|length:5,15|alphaNum|unique:admin,user',
-        'name' => 'chs',
+        'user'      => 'require|length:5,15|alphaNum|unique:admin,user',
+        'name'      => 'chs',
         'mpassword' => 'require|length:6,15',
-        'password' => 'require|length:6,15',
+        'password'  => 'require|length:6,15',
         'passwords' => 'require|confirm:password',
-        'card' => 'idCard',
-        'mobile' => 'mobile|unique:admin,mobile',
-        'email' => 'email|unique:admin,email',
-        'age' => 'number|between:1,120',
-        'status' => 'require',
-        'role_id' => 'require'
+        'card'      => 'idCard',
+        'mobile'    => 'mobile|unique:admin,mobile',
+        'email'     => 'email|unique:admin,email',
+        'age'       => 'number|between:1,120',
+        'status'    => 'require',
+        'role_id'   => 'require'
     ];
 
     /**
@@ -40,26 +40,26 @@ class AdminValidate extends \think\Validate
      * @var array
      */
     protected $message = [
-        'user.require' => '账号不能为空！',
-        'user.length' => '账号只能在5到15位之间！',
-        'user.alphaNum' => '账号只能是字母和数字组成！',
-        'user.unique' => '账号已存在！',
-        'name.chs' => '真实姓名只能是汉字！',
+        'user.require'      => '账号不能为空！',
+        'user.length'       => '账号只能在5到15位之间！',
+        'user.alphaNum'     => '账号只能是字母和数字组成！',
+        'user.unique'       => '账号已存在！',
+        'name.chs'          => '真实姓名只能是汉字！',
         'mpassword.require' => '旧密码不能为空！',
-        'mpassword.length' => '旧密码只能在6到15位之间！',
-        'password.require' => '密码不能为空！',
-        'password.length' => '密码只能在6到15位之间！',
+        'mpassword.length'  => '旧密码只能在6到15位之间！',
+        'password.require'  => '密码不能为空！',
+        'password.length'   => '密码只能在6到15位之间！',
         'passwords.require' => '确认密码不能为空！',
         'passwords.confirm' => '两次密码不一致！',
-        'card.idCard' => '身份证号码格式错误！',
-        'mobile.mobile' => '手机号码格式不正确！',
-        'mobile.unique' => '手机号码已存在！',
-        'email.email' => '邮箱格式不正确！',
-        'email.unique' => '邮箱已存在！',
-        'age.number' => '年龄必须是数字！',
-        'age.between' => '年龄只能在1-120岁之间！',
-        'status.require' => '请选择状态',
-        'role_id.require' => '权限组不能为空！'
+        'card.idCard'       => '身份证号码格式错误！',
+        'mobile.mobile'     => '手机号码格式不正确！',
+        'mobile.unique'     => '手机号码已存在！',
+        'email.email'       => '邮箱格式不正确！',
+        'email.unique'      => '邮箱已存在！',
+        'age.number'        => '年龄必须是数字！',
+        'age.between'       => '年龄只能在1-120岁之间！',
+        'status.require'    => '请选择状态',
+        'role_id.require'   => '权限组不能为空！'
     ];
 
 
@@ -69,7 +69,11 @@ class AdminValidate extends \think\Validate
      */
     public function scenepassEdit(): AdminValidate
     {
-        return $this->only(['mpassword', 'password', 'passwords']);
+        return $this->only([
+            'mpassword',
+            'password',
+            'passwords'
+        ]);
     }
 
     /**
@@ -78,7 +82,18 @@ class AdminValidate extends \think\Validate
      */
     public function sceneAdd(): AdminValidate
     {
-        return $this->only(['user', 'name', 'password', 'passwords', 'card', 'mobile', 'email', 'age', 'status', 'role_id']);
+        return $this->only([
+            'user',
+            'name',
+            'password',
+            'passwords',
+            'card',
+            'mobile',
+            'email',
+            'age',
+            'status',
+            'role_id'
+        ]);
     }
 
     /**
@@ -87,6 +102,14 @@ class AdminValidate extends \think\Validate
      */
     public function sceneEdit(): AdminValidate
     {
-        return $this->only(['user', 'name', 'password', 'card', 'mobile', 'email', 'age'])->remove('password', 'require');
+        return $this->only([
+            'user',
+            'name',
+            'password',
+            'card',
+            'mobile',
+            'email',
+            'age'
+        ])->remove('password', 'require');
     }
 }

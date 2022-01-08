@@ -20,7 +20,7 @@ class LoginValidate extends \think\Validate
      * @var array
      */
     protected $rule = [
-        'user' => 'require|length:5,15',
+        'user'     => 'require|length:5,15',
         'password' => 'require|length:6,15'
     ];
 
@@ -31,9 +31,9 @@ class LoginValidate extends \think\Validate
      * @var array
      */
     protected $message = [
-        'user.require' => '账号不能为空',
+        'user.require'     => '账号不能为空',
         'password.require' => '密码不能为空',
-        'user.length' => '账号只能在5到15位之间',
-        'password.length' => '密码只能在6到15位之间'
+        'user.length'      => '账号只能在5到15位之间',
+        'password.length'  => '密码只能在6到15位之间'
     ];
 }

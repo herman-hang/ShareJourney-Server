@@ -70,16 +70,16 @@ class AuthMiddleware
                     // 记录退出的时间和IP地址
                     try {
                         $expToken = JWTAuth::auth(false);
-                        $id = $expToken['uid']->getValue();
+                        $id       = $expToken['uid']->getValue();
                         show(0, "登录超时！", [], $id);
                     } catch (JWTException $exception) {
                         $result = [
                             'code' => 401,
-                            'msg' => $exception->getMessage(),
+                            'msg'  => $exception->getMessage(),
                             'time' => time(),
                             'data' => [],
                         ];
-                        throw new \think\exception\HttpResponseException(Response::create($result,'json'));
+                        throw new \think\exception\HttpResponseException(Response::create($result, 'json'));
                     }
                 }
             }

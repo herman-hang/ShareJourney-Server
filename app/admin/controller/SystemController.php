@@ -27,7 +27,7 @@ class SystemController extends CommonController
     {
         //当前系统信息
         $system = Db::name('system')->where('id', 1)->withoutField('id,ip,max_logerror,file_storage,images_storage,access')->find();
-        show(200,"获取系统设置信息成功！",$system ?? []);
+        show(200, "获取系统设置信息成功！", $system ?? []);
     }
 
     /**
@@ -37,7 +37,7 @@ class SystemController extends CommonController
     public function systemEdit()
     {
         //接收所有提交数值，排除以下指定参数
-        $data = Request::except(['id','file_storage', 'max_logerror', 'ip', 'images_storage', 'access', 'version']);
+        $data = Request::except(['id', 'file_storage', 'max_logerror', 'ip', 'images_storage', 'access', 'version']);
         //实例化
         $validate = new SystemValidate;
         //验证数据
@@ -127,8 +127,8 @@ class SystemController extends CommonController
     public function switchEdit()
     {
         //接收前台传过来的数值
-        $data = Request::except(['id','epay_switch']);
-        $res = Db::name('switch')->where('id', 1)->update($data);
+        $data = Request::except(['id', 'epay_switch']);
+        $res  = Db::name('switch')->where('id', 1)->update($data);
         if ($res) {
             show(200, "修改成功！");
         } else {

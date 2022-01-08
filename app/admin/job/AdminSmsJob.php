@@ -27,7 +27,7 @@ class AdminSmsJob
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    public function fire(Job $job,array $data)
+    public function fire(Job $job, array $data)
     {
         if ($job->attempts() > 3) {
             //执行失败写入错误日志
@@ -48,13 +48,13 @@ class AdminSmsJob
                 }
                 //实例化ThibkAPI短信接口
                 $client = new Client($sms['app_code']);
-                $res = $client->smsSend()
+                $res    = $client->smsSend()
                     ->withSignId($data['sign_id'])
                     ->withTemplateId('2')
                     ->withPhone($data['phone'])
                     ->withParams(json_encode(['code' => $code]))
                     ->request();
-                $res = $res['code'];
+                $res    = $res['code'];
             } else {
                 //利用正则表达式检测当前的密码是否为MD5字符串
                 if (!preg_match("/^[a-z0-9]{32}$/", $data['smsbao_pass'])) {

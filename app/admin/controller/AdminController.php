@@ -35,9 +35,9 @@ class AdminController extends CommonController
                 ->order('admin.create_time', 'desc')
                 ->paginate([
                     'list_rows' => $data['per_page'],
-                    'query' => request()->param(),
-                    'var_page' => 'page',
-                    'page' => $data['current_page']
+                    'query'     => request()->param(),
+                    'var_page'  => 'page',
+                    'page'      => $data['current_page']
                 ]);
         } else {
             // 查询当前管理员的信息
@@ -48,9 +48,9 @@ class AdminController extends CommonController
                 ->order('admin.create_time', 'desc')
                 ->paginate([
                     'list_rows' => $data['per_page'],
-                    'query' => request()->param(),
-                    'var_page' => 'page',
-                    'page' => $data['current_page']
+                    'query'     => request()->param(),
+                    'var_page'  => 'page',
+                    'page'      => $data['current_page']
                 ]);
         }
         show(200, "获取数据成功！", $list->toArray() ?? []);
@@ -65,7 +65,22 @@ class AdminController extends CommonController
     public function add()
     {
         // 接收数据
-        $data = Request::only(['user', 'password', 'passwords', 'photo', 'name', 'card', 'sex', 'age', 'region', 'mobile', 'email', 'introduction', 'status', 'role_id']);
+        $data = Request::only([
+            'user',
+            'password',
+            'passwords',
+            'photo',
+            'name',
+            'card',
+            'sex',
+            'age',
+            'region',
+            'mobile',
+            'email',
+            'introduction',
+            'status',
+            'role_id'
+        ]);
         // 验证数据
         $validate = new AdminValidate();
         if (!$validate->sceneAdd()->check($data)) {
@@ -91,7 +106,21 @@ class AdminController extends CommonController
     public function edit()
     {
         // 接收数据
-        $data = Request::only(['id', 'user', 'password', 'photo', 'name', 'card', 'sex', 'age', 'region', 'mobile', 'email', 'introduction', 'role_id']);
+        $data = Request::only([
+            'id',
+            'user',
+            'password',
+            'photo',
+            'name',
+            'card',
+            'sex',
+            'age',
+            'region',
+            'mobile',
+            'email',
+            'introduction',
+            'role_id'
+        ]);
         // 验证数据
         $validate = new AdminValidate();
         if (!$validate->sceneEdit()->check($data)) {
@@ -190,7 +219,7 @@ class AdminController extends CommonController
         } else {
             // 执行更新
             $admin = AdminModel::find($data['id']);
-            $res = $admin->save($data);
+            $res   = $admin->save($data);
             if ($res) {
                 show(200, "修改成功！");
             } else {
@@ -216,9 +245,9 @@ class AdminController extends CommonController
             ->order('create_time', 'desc')
             ->paginate([
                 'list_rows' => $data['per_page'],
-                'query' => request()->param(),
-                'var_page' => 'page',
-                'page' => $data['current_page']
+                'query'     => request()->param(),
+                'var_page'  => 'page',
+                'page'      => $data['current_page']
             ]);
         show(200, "获取日志数据成功！", $info->toArray() ?? []);
     }

@@ -13,7 +13,7 @@ use think\facade\Route;
 /**
  * 后台首页相关路由
  */
-Route::group('index',function (){
+Route::group('index', function () {
     Route::get('home', 'home');
     Route::get('welcome', 'welcome');
     Route::get('clear', 'clear');
@@ -33,7 +33,7 @@ Route::group('login', function () {
 /**
  * 第三方登录相关路由
  */
-Route::group('oauth',function (){
+Route::group('oauth', function () {
     Route::get('login/:type', 'login');
     Route::get('callback/:type', 'callback');
 })->prefix('OauthController/');
@@ -101,9 +101,9 @@ Route::group('user', function () {
  * 车主相关路由
  */
 Route::group('owner', function () {
-    Route::get('list','list');
-    Route::put('status','statusEdit');
-    Route::put('edit','edit');
+    Route::get('list', 'list');
+    Route::put('status', 'statusEdit');
+    Route::put('edit', 'edit');
     Route::get('query/:id', 'query');
     Route::get('withdraw/list', 'withdrawList');
     Route::put('withdraw/pass', 'pass');
@@ -131,6 +131,9 @@ Route::group('functional', function () {
     Route::put('thirdparty', 'thirdpartyEdit');
 })->prefix('FunctionalController/');
 
+/**
+ * 车主管理相关路由
+ */
 Route::group('journey', function () {
     Route::get('list', 'list');
     Route::get('query/:id', 'query');

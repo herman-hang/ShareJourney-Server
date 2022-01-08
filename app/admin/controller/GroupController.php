@@ -39,13 +39,13 @@ class GroupController extends CommonController
                 ->whereLike('name|instruction', "%" . $data['keywords'] . "%")
                 ->paginate([
                     'list_rows' => $data['per_page'],
-                    'query' => request()->param(),
-                    'var_page' => 'page',
-                    'page' => $data['current_page']
+                    'query'     => request()->param(),
+                    'var_page'  => 'page',
+                    'page'      => $data['current_page']
                 ])->each(function (&$item, $key) {
                     // 查询当前所有管理员用该权限组的user
                     $admin = Db::name('admin')->where('role_id', $item['id'])->field('user')->select();
-                    $arr = [];
+                    $arr   = [];
                     foreach ($admin as $k => $v) {
                         $arr[$k] = $v['user'];
                     }
@@ -58,13 +58,13 @@ class GroupController extends CommonController
                 ->order('create_time', 'desc')
                 ->paginate([
                     'list_rows' => $data['per_page'],
-                    'query' => request()->param(),
-                    'var_page' => 'page',
-                    'page' => $data['current_page']
+                    'query'     => request()->param(),
+                    'var_page'  => 'page',
+                    'page'      => $data['current_page']
                 ])->each(function (&$item, $key) {
                     // 查询当前所有管理员用该权限组的user
                     $admin = Db::name('admin')->where('role_id', $item['id'])->field('user')->select();
-                    $arr = [];
+                    $arr   = [];
                     foreach ($admin as $k => $v) {
                         $arr[$k] = $v['user'];
                     }
@@ -117,7 +117,7 @@ class GroupController extends CommonController
         }
         // 执行更新
         $group = GroupModel::find($data['id']);
-        $res = $group->save($data);
+        $res   = $group->save($data);
         if ($res) {
             show(200, "修改成功！");
         } else {
@@ -189,7 +189,7 @@ class GroupController extends CommonController
         //循环一级数组
         foreach ($one as $key => $val) {
             //查询二级ID
-            $two = Db::name('menu')->where('pid', $val['id'])->field(['id', 'name', 'pid'])->select()->toArray();
+            $two                   = Db::name('menu')->where('pid', $val['id'])->field(['id', 'name', 'pid'])->select()->toArray();
             $one[$key]['children'] = $two;
             //循环二级数组
             foreach ($one[$key]['children'] as $item => $value) {
@@ -223,7 +223,7 @@ class GroupController extends CommonController
         } else {
             // 执行更新
             $group = GroupModel::find($data['id']);
-            $res = $group->save($data);
+            $res   = $group->save($data);
             if ($res) {
                 show(200, "修改成功！");
             } else {

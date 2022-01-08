@@ -28,7 +28,7 @@ class IndexController extends CommonController
     public function home()
     {
         //菜单查询
-        $menu = Db::name('menu')->where(['pid' => 0, 'status' => 1])->field('id,name')->order('sort', 'desc')->select()->toArray();
+        $menu  = Db::name('menu')->where(['pid' => 0, 'status' => 1])->field('id,name')->order('sort', 'desc')->select()->toArray();
         $admin = Db::name('admin')->where('id', request()->uid)->field('role_id')->find();
         $group = Db::name('group')->where('id', $admin['role_id'])->field('rules')->find();
         //转数组
@@ -49,7 +49,7 @@ class IndexController extends CommonController
             }
         } else {//超级管理员
             foreach ($menu as $key => $val) {
-                $subMenu = Db::name('menu')->where(['pid' => $val['id'], 'status' => 1])->field('id,name')->order('sort', 'desc')->select();
+                $subMenu                = Db::name('menu')->where(['pid' => $val['id'], 'status' => 1])->field('id,name')->order('sort', 'desc')->select();
                 $menu[$key]['children'] = $subMenu;
             }
         }
@@ -65,8 +65,8 @@ class IndexController extends CommonController
     public function welcome()
     {
         // 我的状态
-        $admin = Db::name('admin')->where('id', request()->uid)->field('user,role_id,lastlog_time,lastlog_ip,login_sum')->find();
-        $group = Db::name('group')->where('id', $admin['role_id'])->field('name')->find();
+        $admin          = Db::name('admin')->where('id', request()->uid)->field('user,role_id,lastlog_time,lastlog_ip,login_sum')->find();
+        $group          = Db::name('group')->where('id', $admin['role_id'])->field('name')->find();
         $data['status'] = [
             ['key' => '当前登录者', 'value' => $admin['user']],
             ['key' => '所属权限组', 'value' => $group['name']],
@@ -75,15 +75,15 @@ class IndexController extends CommonController
             ['key' => '登录总次数', 'value' => $admin['login_sum']]
         ];
         // 顶部四大数据栏
-        $moneyTotal = Db::name('user_buylog')->where('status', '1')->sum('money');
-        $owner = Db::name('user_owner')->count();
-        $user = Db::name('user')->count();
-        $order = Db::name('user_buylog')->count();
+        $moneyTotal   = Db::name('user_buylog')->where('status', '1')->sum('money');
+        $owner        = Db::name('user_owner')->count();
+        $user         = Db::name('user')->count();
+        $order        = Db::name('user_buylog')->count();
         $data['head'] = [
             'money_total' => $moneyTotal,
-            'owner' => $owner,
-            'user' => $user,
-            'order' => $order
+            'owner'       => $owner,
+            'user'        => $user,
+            'order'       => $order
         ];
         // 近7天报表
         $week = -6;
@@ -121,13 +121,13 @@ class IndexController extends CommonController
             $journeyWeekData[] = $dayJourney;
             // 每日时间记录
             $weekTime[] = date('Y-m-d', strtotime("{$week} day"));
-            $week = $week + 1;
+            $week       = $week + 1;
         }
         $data['option'] = [
             'legend' => [
                 'data' => ['收入金额', '用户注册', '完成订单', '车主数量', '旅途数量']
             ],
-            'xAxis' => [
+            'xAxis'  => [
                 ['data' => $weekTime ?? []]
             ],
             'series' => [
@@ -139,13 +139,13 @@ class IndexController extends CommonController
             ]
         ];
         // 消费日志
-        $buyLog = Db::name('user_buylog')->field('uid,indent,money')->order('create_time', 'desc')->limit(5)->select();
+        $buyLog          = Db::name('user_buylog')->field('uid,indent,money')->order('create_time', 'desc')->limit(5)->select();
         $data['buy_log'] = $buyLog;
         // 待提现订单
-        $toAudit = Db::name('owner_withdraw')->where('status', '0')->field('owner_id,indent,money')->order('create_time', 'desc')->limit(5)->select();
+        $toAudit          = Db::name('owner_withdraw')->where('status', '0')->field('owner_id,indent,money')->order('create_time', 'desc')->limit(5)->select();
         $data['to_audit'] = $toAudit;
         // 待审核车主
-        $toOwner = Db::view('user', 'id as uid,user')
+        $toOwner          = Db::view('user', 'id as uid,user')
             ->view('user_owner', 'id,create_time', 'user_owner.user_id=user.id')
             ->where('user.is_owner', '1')
             ->order('user_owner.create_time', 'desc')
@@ -153,7 +153,7 @@ class IndexController extends CommonController
             ->select();
         $data['to_owner'] = $toOwner;
         // 新注册用户
-        $newUser = Db::name('user')->field('id,user,create_time')->order('create_time', 'desc')->limit(5)->select();
+        $newUser          = Db::name('user')->field('id,user,create_time')->order('create_time', 'desc')->limit(5)->select();
         $data['new_user'] = $newUser;
         show(200, "获取数据成功！", $data);
     }
