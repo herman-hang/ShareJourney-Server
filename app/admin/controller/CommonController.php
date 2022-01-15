@@ -60,66 +60,6 @@ class CommonController extends BaseController
     public function upload()
     {
         // 获取表单上传文件
-        $files = request()->file();
-        // 查询文件存储类型
-        $system = Db::name('system')->where('id', 1)->field('file_storage,images_storage')->find();
-        // 上传到本地服务器
-        try {
-            validate([
-                'image|图片' => 'filesize:1567800|fileExt:jpg,jpeg,png,gif,ico,bmp',
-                'file|文件'  => 'fileExt:zip,rar,7z,tar,gz'
-            ])->check($files);
-            if (!is_array($files)) {
-                // 判断上传的是图片还是文件
-                if (isset($files['file'])) {
-                    $type = $system['file_storage'];
-                } else if (isset($files['image'])) {
-                    $type = $system['images_storage'];
-                } else {
-                    // 如果上传的键不符合规范则只能上传到本地
-                    $type = "0";
-                }
-            } else {
-                // 如果上传为多文件，那只能存储在本地
-                $type = "0";
-            }
-            switch ($type) {
-                case "0":
-                    $disk = "public"; //存储在本地
-                    $url  = request()->domain() . "/storage";
-                    break;
-                case "1":
-                    $disk = "aliyun"; //存储在阿里云
-                    $url  = Config::get('filesystem.disks.aliyun.url');
-                    break;
-                case "2":
-                    $disk = "qcloud"; //存储在腾讯云
-                    $url  = Config::get('filesystem.disks.qcloud.cdn');
-                    break;
-                case "3":
-                    $disk = "qiniu"; //存储在七牛云
-                    $url  = Config::get('filesystem.disks.qiniu.url');
-                    break;
-                default:
-                    show(403, "请求错误！");
-            }
-            $saveName = [];
-            foreach ($files as $file) {
-                if (is_array($file)) {
-                    foreach ($file as $f) {
-                        // 获取文件扩展名作存储路径
-                        $fileType   = $f->extension();
-                        $saveName[] = $url . "/" . Filesystem::disk($disk)->putFile($fileType, $f);
-                    }
-                } else {
-                    // 获取文件扩展名作存储路径
-                    $fileType   = $file->extension();
-                    $saveName[] = $url . "/" . Filesystem::disk($disk)->putFile($fileType, $file);
-                }
-            }
-            show(200, "上传成功！", $saveName);
-        } catch (\think\exception\ValidateException $e) {
-            show(500, $e->getMessage());
-        }
+        uploadFile(request()->file());
     }
 }

@@ -1,7 +1,7 @@
 <?php
 /**
- * FileName: ${FileName}
- * Description: ${Description}
+ * FileName: 后台路由
+ * Description: 管理后台API接口
  * @Author: XieGuanHua
  * @Email: wetalk.vip@foxmail.com
  * DateTime: 2021-11-27 21:01

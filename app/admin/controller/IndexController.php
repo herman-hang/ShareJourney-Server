@@ -164,7 +164,7 @@ class IndexController extends CommonController
     public function clear()
     {
         // 删除运行目录
-        if (delete_dir_file(root_path() . 'runtime')) {
+        if (delete_dir_file(root_path() . 'runtime/admin') && delete_dir_file(root_path() . 'runtime/mobile') && delete_dir_file(root_path() . 'runtime/log')) {
             show(200, "清除成功！");
         } else {
             show(200, "清除成功！");
