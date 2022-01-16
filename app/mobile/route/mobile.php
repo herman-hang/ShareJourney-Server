@@ -22,12 +22,13 @@ Route::group('base', function () {
  */
 Route::group('login', function () {
     Route::post('/', 'login');
+    Route::get('/', 'loginOut');
 })->prefix('LoginController/');
 
 /**
  * 注册相关路由
  */
-Route::group('login', function () {
+Route::group('register', function () {
     Route::post('/', 'register');
     Route::get('send/code', 'sendRegisterCode');
 })->prefix('RegisterController/');

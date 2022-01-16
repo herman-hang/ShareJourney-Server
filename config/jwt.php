@@ -8,7 +8,7 @@ return [
     'private_key' => env('JWT_PRIVATE_KEY'),
     'password'    => env('JWT_PASSWORD'),
     //JWT time to live
-    'ttl'         => env('JWT_TTL', 1800),
+    'ttl'         => env('JWT_TTL', 1296000), // 有效期15天
     //Refresh time to live
     'refresh_ttl' => env('JWT_REFRESH_TTL', 20160),
     //JWT hashing algorithm

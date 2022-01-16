@@ -16,6 +16,7 @@ use app\admin\model\UserModel;
 use app\mobile\validate\LoginValidate;
 use thans\jwt\facade\JWTAuth;
 use think\facade\Cache;
+use think\facade\Db;
 use think\facade\Request;
 
 class LoginController extends CommonController
@@ -157,6 +158,23 @@ class LoginController extends CommonController
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * 退出登录
+     * @throws \think\db\exception\DbException
+     */
+    public function loginOut()
+    {
+        // 刷新token
+        JWTAuth::refresh();
+        // 更新
+        $res = Db::name('user')->where('id', request()->uid)->update(['lastlog_time' => time(), 'lastlog_ip' => Request::ip()]);
+        if ($res) {
+            show(200, "退出成功！");
+        } else {
+            show(403, "退出失败！");
         }
     }
 }

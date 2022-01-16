@@ -9,8 +9,6 @@
  */
 
 namespace app\mobile\controller;
-
-
 use Fastknife\Exception\ParamException;
 use Fastknife\Service\BlockPuzzleCaptchaService;
 use Fastknife\Service\ClickWordCaptchaService;
@@ -47,7 +45,7 @@ class CaptchaController
         } catch (\Exception $e) {
             $this->error($e->getMessage());
         }
-        $this->success([]);
+        $this->success($data);
     }
 
     /**

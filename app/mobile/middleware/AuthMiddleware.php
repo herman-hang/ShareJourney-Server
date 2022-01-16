@@ -64,10 +64,10 @@ class AuthMiddleware
                         $expToken = JWTAuth::auth(false);
                         $id       = $expToken['uid']->getValue();
                         Db::name('user')->where('id', $id)->update(['lastlog_time' => time(), 'lastlog_ip' => Request::ip()]);
-                        show(0, "登录超时！");
                     } catch (\Exception $exception) {
                         show(403, $exception->getMessage());
                     }
+                    show(0, "登录超时！");
                 }
             }
         }
@@ -81,8 +81,8 @@ class AuthMiddleware
     protected function checkLogin(array $token)
     {
         // 获取缓存
-        $data = Cache::get("user:{$token['id']}-platform:{$token['platform']}");
-        if (!empty($data) && $token['key'] !== $data['key']) {
+        $data = Cache::get("user:{$token['uid']->getValue()}-platform:{$token['platform']->getValue()}");
+        if (!empty($data) && $token['key']->getValue() !== $data['key']) {
             // 将token拉入黑名单
             JWTAuth::refresh();
             // base64解码

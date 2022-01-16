@@ -34,7 +34,7 @@ class RegisterController extends CommonController
             show(403, "注册已关闭！");
         }
         // 接收数据
-        $data = Request::only(['password', 'code']);
+        $data = Request::only(['mobile', 'password', 'code']);
         // 验证数据
         $validate = new LoginValidate();
         if (!$validate->sceneRegister()->check($data)) {
@@ -47,7 +47,9 @@ class RegisterController extends CommonController
         }
         $data['mobile'] = $codeInfo['mobile'];
         // 生成唯一用户名
-        $data['user'] = self::random();
+        $user             = self::random();
+        $data['user']     = $user;
+        $data['nickname'] = "新用户$user";
         // 密码加密
         $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
         // 新增
@@ -75,7 +77,7 @@ class RegisterController extends CommonController
             show(403, "注册已关闭！");
         }
         // 接收数据
-        $data = Request::only(['mobile']);
+        $data = Request::only(['mobile', 'verification']);
         // 验证数据
         $validate = new LoginValidate();
         if (!$validate->sceneSendRegisterCode()->check($data)) {
@@ -83,7 +85,7 @@ class RegisterController extends CommonController
         }
         // 进行短信发送
         $system       = Db::name('system')->where('id', '1')->field('name')->find();
-        $sms          = Db::name('sms')->where('id', 1)->field('register_id')->find();
+        $sms          = Db::name('sms')->where('id', 1)->field('register_id,sms_type')->find();
         $data['code'] = code_str(2);
         if ($sms['sms_type'] == '0') { // ThinkAPI
             $smsData['temp_id'] = $sms['register_id'];
