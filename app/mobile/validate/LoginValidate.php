@@ -23,7 +23,8 @@ class LoginValidate extends \think\Validate
         'password' => 'require|length:6,15',
         'email'    => 'require|email',
         'mobile'   => 'require|mobile|unique:user,mobile',
-        'accept'   => 'accepted'
+        'accept'   => 'accepted',
+        'code'     => 'require'
     ];
 
     /**
@@ -44,6 +45,7 @@ class LoginValidate extends \think\Validate
         'mobile.mobile'    => '手机号码格式不正确！',
         'mobile.unique'    => '手机号码已注册！',
         'accept.accepted'  => '请同意隐私政策和服务协议！',
+        'code.require'     => '验证码不能为空'
     ];
 
     /**
@@ -61,7 +63,7 @@ class LoginValidate extends \think\Validate
      */
     public function sceneRegister(): LoginValidate
     {
-        return $this->only(['mobile', 'password', 'accept']);
+        return $this->only(['mobile', 'password', 'accept', 'code']);
     }
 
     /**
@@ -79,13 +81,41 @@ class LoginValidate extends \think\Validate
      */
     public function scenePassword(): LoginValidate
     {
-        return $this->only(['password']);
+        return $this->only(['password', 'mobile', 'code'])->remove('mobile', 'unique');
     }
+
     /**
      * 找回密码发送验证码表单验证
      * @return LoginValidate
      */
     public function scenePassSendCode(): LoginValidate
+    {
+        return $this->only(['mobile'])->remove('mobile', 'unique');
+    }
+
+    /**
+     * 短信登录
+     * @return LoginValidate
+     */
+    public function sceneSmsLogin(): LoginValidate
+    {
+        return $this->only(['mobile', 'code'])->remove('mobile', 'unique');
+    }
+
+    /**
+     * 登录发送验证码表单验证
+     * @return LoginValidate
+     */
+    public function sceneLoginSendCode(): LoginValidate
+    {
+        return $this->only(['mobile'])->remove('mobile', 'unique');
+    }
+
+    /**
+     * 微信登录绑定手机号码
+     * @return LoginValidate
+     */
+    public function sceneWeixinLoginBindPhone(): LoginValidate
     {
         return $this->only(['mobile']);
     }

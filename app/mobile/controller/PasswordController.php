@@ -17,7 +17,7 @@ use think\facade\Db;
 use think\facade\Queue;
 use think\facade\Request;
 
-class PasswordController extends CommonController
+class PasswordController
 {
     /**
      * 找回密码
@@ -26,7 +26,7 @@ class PasswordController extends CommonController
     public function password()
     {
         // 接收数据
-        $data = Request::only(['password', 'code']);
+        $data = Request::only(['mobile', 'password', 'code', 'verification']);
         // 验证数据
         $validate = new LoginValidate();
         if (!$validate->scenePassword()->check($data)) {
@@ -37,10 +37,14 @@ class PasswordController extends CommonController
         if ($data['code'] !== $codeInfo['code']) {
             show(403, "验证码错误！");
         }
+        // 滑动验证码最终验证
+        (new CaptchaController())->checkParam($data['verification']);
         // 加密
         $password = password_hash($data['password'], PASSWORD_BCRYPT);
         $res      = Db::name('user')->where('mobile', $codeInfo['mobile'])->update(['password' => $password]);
         if ($res) {
+            // 删除滑块验证码缓存信息
+            Cache::delete('slider_captcha_' . Request::ip());
             // 删除验证码
             Cache::delete('send_password_code_' . Request::ip());
             show(200, "找回成功！");
@@ -59,6 +63,9 @@ class PasswordController extends CommonController
     {
         // 接收数据
         $data = Request::only(['mobile']);
+        // 滑动验证码二次验证
+        $captchaData = Cache::get('slider_captcha_' . Request::ip());
+        (new CaptchaController())->verification($captchaData);
         // 验证数据
         $validate = new LoginValidate();
         if (!$validate->scenePassSendCode()->check($data)) {
@@ -70,7 +77,7 @@ class PasswordController extends CommonController
         }
         // 进行短信发送
         $system       = Db::name('system')->where('id', '1')->field('name')->find();
-        $sms          = Db::name('sms')->where('id', 1)->field('password_id')->find();
+        $sms          = Db::name('sms')->where('id', 1)->field('password_id,sms_type')->find();
         $data['code'] = code_str(2);
         if ($sms['sms_type'] == '0') { // ThinkAPI
             $smsData['temp_id'] = $sms['password_id'];

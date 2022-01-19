@@ -34,7 +34,7 @@ class RegisterController extends CommonController
             show(403, "注册已关闭！");
         }
         // 接收数据
-        $data = Request::only(['mobile', 'password', 'code']);
+        $data = Request::only(['mobile', 'password', 'code', 'verification']);
         // 验证数据
         $validate = new LoginValidate();
         if (!$validate->sceneRegister()->check($data)) {
@@ -45,6 +45,8 @@ class RegisterController extends CommonController
         if ($data['code'] !== $codeInfo['code']) {
             show(403, "验证码错误！");
         }
+        // 滑动验证码最终验证
+        (new CaptchaController())->checkParam($data['verification']);
         $data['mobile'] = $codeInfo['mobile'];
         // 生成唯一用户名
         $user             = self::random();
@@ -55,6 +57,8 @@ class RegisterController extends CommonController
         // 新增
         $res = UserModel::create($data);
         if ($res) {
+            // 删除滑块验证码缓存信息
+            Cache::delete('slider_captcha_' . Request::ip());
             // 删除验证码
             Cache::delete('send_register_code_' . Request::ip());
             show(200, "注册成功！");
@@ -77,7 +81,10 @@ class RegisterController extends CommonController
             show(403, "注册已关闭！");
         }
         // 接收数据
-        $data = Request::only(['mobile', 'verification']);
+        $data = Request::only(['mobile']);
+        // 滑动验证码二次验证
+        $captchaData = Cache::get('slider_captcha_' . Request::ip());
+        (new CaptchaController())->verification($captchaData);
         // 验证数据
         $validate = new LoginValidate();
         if (!$validate->sceneSendRegisterCode()->check($data)) {

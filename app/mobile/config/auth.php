@@ -10,6 +10,11 @@
 return [
     'not_login' => [
         'LoginController/login',// 登录
+        'LoginController/smsLogin',// 短信登录
+        'LoginController/sendLoginCode',// 短信登录发送验证码
+        'LoginController/weixinLogin',// 微信授权登录
+        'LoginController/bindPhoneSendCode',// 微信授权登录绑定手机发送验证码
+        'LoginController/bindPhone',// 微信授权登录绑定手机
         'RegisterController/register',// 注册
         'RegisterController/sendRegisterCode',// 注册发送验证码
     ]

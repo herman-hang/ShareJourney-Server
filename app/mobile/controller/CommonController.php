@@ -12,9 +12,7 @@ namespace app\mobile\controller;
 
 
 use app\mobile\middleware\AuthMiddleware;
-use Fastknife\Service\BlockPuzzleCaptchaService;
 use think\facade\Db;
-use think\facade\Validate;
 
 class CommonController extends \app\BaseController
 {
@@ -52,21 +50,6 @@ class CommonController extends \app\BaseController
             self::random();
         } else {
             return $number;
-        }
-    }
-
-    /**
-     * 滑动验证码后端最终key验证
-     * @param string $param
-     */
-    public function checkParam(string $param)
-    {
-        try {
-            $config  = config('captcha');
-            $service = new BlockPuzzleCaptchaService($config);
-            $service->verificationByEncryptCode($param);
-        } catch (\Exception $exception) {
-            show(403, $exception->getMessage());
         }
     }
 

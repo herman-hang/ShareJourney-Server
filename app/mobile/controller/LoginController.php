@@ -17,7 +17,10 @@ use app\mobile\validate\LoginValidate;
 use thans\jwt\facade\JWTAuth;
 use think\facade\Cache;
 use think\facade\Db;
+use think\facade\Queue;
 use think\facade\Request;
+use wlt\wxmini\WXBizDataCrypt;
+use wlt\wxmini\WXLoginHelper;
 
 class LoginController extends CommonController
 {
@@ -175,6 +178,225 @@ class LoginController extends CommonController
             show(200, "退出成功！");
         } else {
             show(403, "退出失败！");
+        }
+    }
+
+    /**
+     * 短信登录
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public function smsLogin()
+    {
+        // 接收数据
+        $data = Request::only(['mobile', 'code', 'verification', 'platform']);
+        // 滑动验证码最终验证
+        (new CaptchaController())->checkParam($data['verification']);
+        // 验证数据
+        $validate = new LoginValidate();
+        if (!$validate->sceneSmsLogin()->check($data)) {
+            show(403, $validate->getError());
+        }
+        // 验证码
+        $codeInfo = Cache::get('send_login_code_' . Request::ip());
+        if ($data['code'] !== $codeInfo['code']) {
+            show(403, "验证码错误！");
+        }
+        $user = UserModel::where('mobile', $data['mobile'])->field('id,password,status,login_sum,error_time,login_error,ban_time')->find();
+        if (empty($user)) {
+            show(403, "用户不存在！");
+        } else if ($user['status'] == 0) {
+            show(403, "用户已停用！");
+        } else {
+            //登录总次数自增1
+            $user->inc('login_sum')->update();
+            $tokenInfo = ['uid' => $user['id'], 'key' => base64_encode(time()), 'platform' => $data['platform'], 'ip' => Request::ip()];
+            //参数为用户认证的信息，请自行添加
+            $token = JWTAuth::builder($tokenInfo);
+            // 缓存key，限制每个账号在每个终端只允许登录一个
+            Cache::set("user:{$user['id']}-platform:{$data['platform']}", $tokenInfo);
+            show(200, '登录成功！', ['Authorization' => 'bearer ' . $token]);
+        }
+    }
+
+    /**
+     * 短信登录发送验证码
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public function sendLoginCode()
+    {
+        // 接收数据
+        $data = Request::only(['mobile']);
+        // 滑动验证码二次验证
+        $captchaData = Cache::get('slider_captcha_' . Request::ip());
+        (new CaptchaController())->verification($captchaData);
+        // 验证数据
+        $validate = new LoginValidate();
+        if (!$validate->sceneLoginSendCode()->check($data)) {
+            show(403, $validate->getError());
+        }
+        $isExist = Db::name('user')->where('mobile', $data['mobile'])->find();
+        if (empty($isExist)) {
+            show(403, "当前用户不存在！");
+        }
+        // 进行短信发送
+        $system       = Db::name('system')->where('id', '1')->field('name')->find();
+        $sms          = Db::name('sms')->where('id', 1)->field('sms_login_id,sms_type')->find();
+        $data['code'] = code_str(2);
+        if ($sms['sms_type'] == '0') { // ThinkAPI
+            $smsData['temp_id'] = $sms['sms_login_id'];
+            $smsData['type']    = 0;
+            $smsData['params']  = ['code' => $data['code']];
+        } else { // 短信宝
+            $smsData['content'] = "【{$system['name']}】您正在使用短信登录，验证码为{$data['code']}，有效期为5分钟。";
+            $smsData['type']    = 1;
+        }
+        $smsData['mobile'] = $data['mobile'];
+        if (!empty($smsData)) {
+            Queue::push('app\job\SendSmsJob', $smsData, 'mobile');
+        }
+        // 对手机号码和验证码进行缓存，方便验证和注册
+        Cache::set('send_login_code_' . Request::ip(), $data, 600);
+        show(200, "发送成功！");
+    }
+
+    /**
+     * 微信授权登录
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public function weixinLogin()
+    {
+        // 接收数据
+        $data = Request::only(['code', 'param', 'platform']);
+        // 查询小程序密钥
+        $mini          = Db::name('thirdparty')->where('id', 1)->field('wx_mini_appid,wx_mini_secret')->find();
+        $key['appid']  = $mini['wx_mini_appid'];
+        $key['secret'] = $mini['wx_mini_secret'];
+        $wxHelper      = new WXLoginHelper($key);
+        $result        = $wxHelper->checkLogin($data['code'], $data['param']['rawData'], $data['param']['signature'], $data['param']['encryptedData'], $data['param']['iv']);
+        // 根据openid查询用户是否存在
+        $user = UserModel::where('weixin_openid', $result['openId'])->find();
+        if (!empty($user)) {
+            //登录总次数自增1
+            $user->inc('login_sum')->update();
+            $tokenInfo = ['uid' => $user['id'], 'key' => base64_encode(time()), 'platform' => $data['platform'], 'ip' => Request::ip()];
+            //参数为用户认证的信息，请自行添加
+            $token = JWTAuth::builder($tokenInfo);
+            // 缓存key，限制每个账号在每个终端只允许登录一个
+            Cache::set("user:{$user['id']}-platform:{$data['platform']}", $tokenInfo);
+            show(200, '授权登录成功！', ['Authorization' => 'bearer ' . $token, 'session3rd' => $result['session3rd']]);
+        } else {
+            $data['open_id'] = $result['openId'];
+            Cache::set('bind_weixin_login_' . Request::ip(), $data, 600);
+            show(401, "请绑定手机号码！");
+        }
+    }
+
+    /**
+     * 微信登录授权绑定手机发送验证码
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public function bindPhoneSendCode()
+    {
+        // 接收数据
+        $data = Request::only(['mobile']);
+        // 滑动验证码二次验证
+        $captchaData = Cache::get('slider_captcha_' . Request::ip());
+        (new CaptchaController())->verification($captchaData);
+        // 验证数据
+        $validate = new LoginValidate();
+        if (!$validate->sceneWeixinLoginBindPhone()->check($data)) {
+            show(403, $validate->getError());
+        }
+        // 进行短信发送
+        $system       = Db::name('system')->where('id', '1')->field('name')->find();
+        $sms          = Db::name('sms')->where('id', 1)->field('bind_id,sms_type')->find();
+        $data['code'] = code_str(2);
+        if ($sms['sms_type'] == '0') { // ThinkAPI
+            $smsData['temp_id'] = $sms['bind_id'];
+            $smsData['type']    = 0;
+            $smsData['params']  = ['code' => $data['code']];
+        } else { // 短信宝
+            $smsData['content'] = "【{$system['name']}】您正在绑定手机号码，验证码为{$data['code']}，有效期为5分钟。";
+            $smsData['type']    = 1;
+        }
+        $smsData['mobile'] = $data['mobile'];
+        if (!empty($smsData)) {
+            Queue::push('app\job\SendSmsJob', $smsData, 'mobile');
+        }
+        // 对手机号码和验证码进行缓存，方便验证和注册
+        Cache::set('send_weixin_login_bind_code_' . Request::ip(), $data, 600);
+        show(200, "发送成功！");
+    }
+
+    /**
+     * 微信授权绑定手机并登录
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public function bindPhone()
+    {
+        $code = Request::only(['verification', 'code']);
+        // 获取手机号码数据
+        $data = Cache::get('send_weixin_login_bind_code_' . Request::ip());
+        if ($code['code'] !== $data['code']) {
+            show(403, "手机验证码错误！");
+        }
+        // 滑动验证码最终验证
+        (new CaptchaController())->checkParam($code['verification']);
+        // 获取微信授权的数据
+        $weixin  = Cache::get('bind_weixin_login_' . Request::ip());
+        $isExist = Db::name('user')->where('mobile', $data['mobile'])->find();
+        if (!empty($isExist)) {
+            show(403, "手机号码已注册！");
+        }
+        // 生成唯一用户名
+        $user                  = self::random();
+        $data['user']          = $user;
+        $data['nickname']      = $weixin['param']['userInfo']['nickName'];
+        $data['photo']         = $weixin['param']['userInfo']['avatarUrl'];
+        $data['weixin_openid'] = $weixin['open_id'];
+        switch ($weixin['param']['userInfo']['gender']) {
+            case 0:
+                $data['sex'] = 2;
+                break;
+            case 1:
+                $data['sex'] = 1;
+                break;
+            case 2:
+                $data['sex'] = 0;
+                break;
+            default :
+                break;
+        }
+        // 密码加密
+        $data['password'] = password_hash($weixin['code'], PASSWORD_BCRYPT);
+        // 新增
+        $res = UserModel::create($data);
+        if ($res) {
+            // 根据openid查询用户是否存在
+            $user = UserModel::where('id', $res->id)->find();
+            //登录总次数自增1
+            $user->inc('login_sum')->update();
+            $tokenInfo = ['uid' => $user['id'], 'key' => base64_encode(time()), 'platform' => $weixin['platform'], 'ip' => Request::ip()];
+            //参数为用户认证的信息，请自行添加
+            $token = JWTAuth::builder($tokenInfo);
+            // 缓存key，限制每个账号在每个终端只允许登录一个
+            Cache::set("user:{$user['id']}-platform:{$weixin['platform']}", $tokenInfo);
+            // 删除缓存
+            Cache::delete('send_weixin_login_bind_code_' . Request::ip());
+            Cache::delete('bind_weixin_login_' . Request::ip());
+            show(200, "绑定成功！", ['Authorization' => 'bearer ' . $token]);
+        } else {
+            show(403, "绑定失败！");
         }
     }
 }

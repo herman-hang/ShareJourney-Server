@@ -35,7 +35,8 @@
         "phpmailer/phpmailer": "^6.5",
         "topthink/think-view": "^1.0",
         "fzaninotto/faker": "^1.9",
-        "fastknife/ajcaptcha": "^1.1"
+        "fastknife/ajcaptcha": "^1.1",
+        "xxh/think-wxminihelper": "^1.0"
     },
     "require-dev": {
         "symfony/var-dumper": "^4.2",

@@ -23,6 +23,11 @@ Route::group('base', function () {
 Route::group('login', function () {
     Route::post('/', 'login');
     Route::get('/', 'loginOut');
+    Route::get('send/code', 'sendLoginCode');
+    Route::post('sms', 'smsLogin');
+    Route::post('weixin', 'weixinLogin');
+    Route::get('bind/send/code', 'bindPhoneSendCode');
+    Route::post('bind/phone', 'bindPhone');
 })->prefix('LoginController/');
 
 /**

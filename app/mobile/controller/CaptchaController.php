@@ -9,10 +9,13 @@
  */
 
 namespace app\mobile\controller;
+
 use Fastknife\Exception\ParamException;
 use Fastknife\Service\BlockPuzzleCaptchaService;
 use Fastknife\Service\ClickWordCaptchaService;
 use think\exception\HttpResponseException;
+use think\facade\Cache;
+use think\facade\Request;
 use think\facade\Validate;
 use think\Response;
 
@@ -25,7 +28,7 @@ class CaptchaController
     {
         try {
             $service = $this->getCaptchaService();
-            $data = $service->get();
+            $data    = $service->get();
         } catch (\Exception $e) {
             $this->error($e->getMessage());
         }
@@ -42,6 +45,7 @@ class CaptchaController
             $this->validate($data);
             $service = $this->getCaptchaService();
             $service->check($data['token'], $data['pointJson']);
+            Cache::set('slider_captcha_' . Request::ip(), $data, 600);
         } catch (\Exception $e) {
             $this->error($e->getMessage());
         }
@@ -50,18 +54,32 @@ class CaptchaController
 
     /**
      * 二次验证
+     * @param array $data
      */
-    public function verification()
+    public function verification(array $data)
     {
-        $data = request()->post();
         try {
             $this->validate($data);
-            $service = $this->getCaptchaService();
-            $service->verification($data['token'], $data['pointJson']);
+            $service = new BlockPuzzleCaptchaService(config('captcha'));
+            $service->check($data['token'], $data['pointJson']);
         } catch (\Exception $e) {
-            $this->error($e->getMessage());
+            show(403, $e->getMessage());
         }
-        $this->success([]);
+    }
+
+    /**
+     * 滑动验证码后端最终key验证
+     * @param string $param
+     */
+    public function checkParam(string $param)
+    {
+        try {
+            $config  = config('captcha');
+            $service = new BlockPuzzleCaptchaService($config);
+            $service->verificationByEncryptCode($param);
+        } catch (\Exception $exception) {
+            show(403, $exception->getMessage());
+        }
     }
 
     /**
@@ -71,7 +89,7 @@ class CaptchaController
     protected function getCaptchaService()
     {
         $captchaType = request()->post('captchaType', null);
-        $config = config('captcha');
+        $config      = config('captcha');
         switch ($captchaType) {
             case "clickWord":
                 $service = new ClickWordCaptchaService($config);
@@ -91,8 +109,8 @@ class CaptchaController
      */
     protected function validate($data)
     {
-        $rules = [
-            'token' => ['require'],
+        $rules    = [
+            'token'     => ['require'],
             'pointJson' => ['require']
         ];
         $validate = Validate::rule($rules)->failException(true);
@@ -106,10 +124,10 @@ class CaptchaController
     protected function success($data)
     {
         $response = [
-            'error' => false,
+            'error'   => false,
             'repCode' => '0000',
             'repData' => $data,
-            'repMsg' => null,
+            'repMsg'  => null,
             'success' => true,
         ];
         throw new HttpResponseException(Response::create($response, 'json'));
@@ -122,10 +140,10 @@ class CaptchaController
     protected function error($msg)
     {
         $response = [
-            'error' => true,
+            'error'   => true,
             'repCode' => '6111',
             'repData' => null,
-            'repMsg' => $msg,
+            'repMsg'  => $msg,
             'success' => false,
         ];
         throw new HttpResponseException(Response::create($response, 'json'));
