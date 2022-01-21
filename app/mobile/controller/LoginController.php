@@ -170,11 +170,11 @@ class LoginController extends CommonController
      */
     public function loginOut()
     {
-        // 刷新token
-        JWTAuth::refresh();
         // 更新
         $res = Db::name('user')->where('id', request()->uid)->update(['lastlog_time' => time(), 'lastlog_ip' => Request::ip()]);
         if ($res) {
+            // 刷新token
+            JWTAuth::refresh();
             show(200, "退出成功！");
         } else {
             show(403, "退出失败！");

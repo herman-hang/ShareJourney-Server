@@ -22,7 +22,7 @@ Route::group('base', function () {
  */
 Route::group('login', function () {
     Route::post('/', 'login');
-    Route::get('/', 'loginOut');
+    Route::get('out', 'loginOut');
     Route::get('send/code', 'sendLoginCode');
     Route::post('sms', 'smsLogin');
     Route::post('weixin', 'weixinLogin');
@@ -53,3 +53,11 @@ Route::group('captcha', function () {
     Route::post('get', 'get');
     Route::post('check', 'check');
 })->prefix('CaptchaController/');
+
+/**
+ * 我的相关路由
+ */
+Route::group('mine',function (){
+    Route::get('index','index');
+    Route::get('money','myMoney');
+})->prefix('MineController/');
