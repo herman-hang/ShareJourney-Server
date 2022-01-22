@@ -60,4 +60,7 @@ Route::group('captcha', function () {
 Route::group('mine',function (){
     Route::get('index','index');
     Route::get('money','myMoney');
+    Route::get('withdraw','withdraw');
+    Route::post('withdraw/send/code','withdrawSendCode');
+    Route::post('withdraw/audit','withdrawAudit');
 })->prefix('MineController/');

@@ -36,7 +36,8 @@
         "topthink/think-view": "^1.0",
         "fzaninotto/faker": "^1.9",
         "fastknife/ajcaptcha": "^1.1",
-        "xxh/think-wxminihelper": "^1.0"
+        "xxh/think-wxminihelper": "^1.0",
+      "ext-bcmath": "*"
     },
     "require-dev": {
         "symfony/var-dumper": "^4.2",
