@@ -63,4 +63,9 @@ Route::group('mine',function (){
     Route::get('withdraw','withdraw');
     Route::post('withdraw/send/code','withdrawSendCode');
     Route::post('withdraw/audit','withdrawAudit');
+    Route::get('material','getMaterial');
+    Route::post('material','materialSave');
+    Route::get('certification','getCertificationInfo');
+    Route::post('authentication/next','authenticationNext');
+    Route::post('authentication/submit','authenticationSubmit');
 })->prefix('MineController/');

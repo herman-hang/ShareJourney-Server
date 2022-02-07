@@ -8,6 +8,7 @@ use think\facade\Filesystem;
 use think\facade\Request;
 use think\Response;
 use think\facade\Queue;
+
 /**
  * 返回数据函数
  * @param int $code 状态码
@@ -17,30 +18,30 @@ use think\facade\Queue;
  * @param string $type 返回的数据格式
  * @param array $header 返回的响应头
  */
-function show(int $code = 200, string $msg = '操作成功',  array $data = [], int $uid = 0, string $type = '', array $header = [])
+function show(int $code = 200, string $msg = '操作成功', array $data = [], int $uid = 0, string $type = '', array $header = [])
 {
-    if (app('http')->getName() == 'admin'){
+    if (app('http')->getName() == 'admin') {
         // 拼接url
-        $url = strtolower(Request::controller() . '/' . Request::action());
+        $url          = strtolower(Request::controller() . '/' . Request::action());
         $notAuthRoute = Config::get('auth');
         // 将数组中的每一项全部转为小写
         $notAuth = array_map('strtolower', $notAuthRoute['not_auth']);
         if (!in_array($url, $notAuth)) {
             $info['msg'] = $msg;
-            if ($uid !== 0){
+            if ($uid !== 0) {
                 $info['uid'] = $uid;
             }
             // 推送到消息队列
             Queue::later(3, 'app\admin\job\AdminLogJob', $info, 'admin');
         }
     }
-    $result = [
+    $result   = [
         'code' => $code,
-        'msg' => $msg,
+        'msg'  => $msg,
         'time' => time(),
         'data' => $data,
     ];
-    $type = $type ?: 'json';
+    $type     = $type ?: 'json';
     $response = Response::create($result, $type)->header($header);
 
     throw new \think\exception\HttpResponseException($response);
@@ -54,7 +55,7 @@ function trade_no(): string
 {
     list($usec, $sec) = explode(" ", microtime());
     $usec = substr(str_replace('0.', '', $usec), 0, 4);
-    $str = rand(10, 99);
+    $str  = rand(10, 99);
     return date("YmdHis") . $usec . $str;
 }
 
@@ -92,7 +93,7 @@ function code_str(int $type = 1): string
 function send_sms(string $user, string $pass, string $content, string $phone): string
 {
     $statusStr = array(
-        "0" => "短信发送成功",
+        "0"  => "短信发送成功",
         "-1" => "参数不全",
         "-2" => "服务器空间不支持,请确认支持curl或者fsocket，联系您的空间商解决或者更换空间！",
         "30" => "密码错误",
@@ -102,9 +103,9 @@ function send_sms(string $user, string $pass, string $content, string $phone): s
         "43" => "IP地址限制",
         "50" => "内容含有敏感词"
     );
-    $smsApi = "http://www.smsbao.com/"; //短信网关
-    $sendurl = $smsApi . "sms?u=" . $user . "&p=" . $pass . "&m=" . $phone . "&c=" . urlencode($content);
-    $result = file_get_contents($sendurl);
+    $smsApi    = "http://www.smsbao.com/"; //短信网关
+    $sendurl   = $smsApi . "sms?u=" . $user . "&p=" . $pass . "&m=" . $phone . "&c=" . urlencode($content);
+    $result    = file_get_contents($sendurl);
     return $statusStr[$result];
 }
 
@@ -162,7 +163,7 @@ function send_email(string $email, string $emailPassword, string $smtp, string $
         // 是否以HTML文档格式发送  发送后客户端可直接显示对应HTML内容
         $mail->isHTML(true);
         $mail->Subject = $title;
-        $mail->Body = $content;
+        $mail->Body    = $content;
         $mail->AltBody = '当前邮件客户端不支持HTML，请用浏览器登录邮箱查看内容！';
         // 发送邮件返回状态
         $status = $mail->send();
@@ -172,6 +173,7 @@ function send_email(string $email, string $emailPassword, string $smtp, string $
         return false;
     }
 }
+
 /**
  * 循环删除目录和文件
  * @param string $dir_name
@@ -384,12 +386,12 @@ function uploadFile(array $files)
                 foreach ($file as $f) {
                     // 获取文件扩展名作存储路径
                     $fileType   = $f->extension();
-                    $saveName[] = $url . "/" . Filesystem::disk($disk)->putFile($fileType, $f);
+                    $saveName[] = $url . "/" . str_replace("\\", "/", Filesystem::disk($disk)->putFile($fileType, $f));
                 }
             } else {
                 // 获取文件扩展名作存储路径
                 $fileType   = $file->extension();
-                $saveName[] = $url . "/" . Filesystem::disk($disk)->putFile($fileType, $file);
+                $saveName[] = $url . "/" . str_replace("\\", "/", Filesystem::disk($disk)->putFile($fileType, $file));
             }
         }
         show(200, "上传成功！", $saveName);

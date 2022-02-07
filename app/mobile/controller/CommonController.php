@@ -53,4 +53,24 @@ class CommonController extends \app\BaseController
         }
     }
 
+    /**
+     * PHP手机号或银行卡号保留前四位和后四位，其余替换成*号
+     * @param string $str 待加密字符串
+     * @param int $startLen 前几位
+     * @param int $endLen 后几位
+     * @return string|string[]|null
+     */
+    public function strReplace(string $str, int $startLen = 4, int $endLen = 4)
+    {
+        $repStr = "";
+        if (strlen($str) < ($startLen + $endLen + 1)) {
+            return $str;
+        }
+        $count = strlen($str) - $startLen - $endLen;
+        for ($i = 0; $i < $count; $i++) {
+            $repStr .= "*";
+        }
+        return preg_replace('/(\d{' . $startLen . '})\d+(\d{' . $endLen . '})/', '${1}' . $repStr . '${2}', $str);
+    }
+
 }

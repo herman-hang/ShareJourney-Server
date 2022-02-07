@@ -100,7 +100,7 @@ class UserController extends CommonController
                 show(403, $validate->getError());
             }
             $owner           = Db::name('user_owner')->where('user_id', $data['id'])->field('id')->find();
-            $data['user_id'] = $data['id'];
+            $data['owner']['user_id'] = $data['id'];
             if (empty($owner)) {
                 UserOwnerModel::create($data['owner']);
             } else {

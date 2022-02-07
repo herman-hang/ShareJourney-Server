@@ -12,7 +12,11 @@ namespace app\mobile\controller;
 
 
 use app\mobile\model\OwnerWithdrawModel;
+use app\mobile\model\UserModel;
+use app\mobile\validate\AuthenticationValidate;
+use app\mobile\validate\MaterialValidate;
 use app\mobile\validate\MyMoneyValidate;
+use think\api\Client;
 use think\facade\Cache;
 use think\facade\Db;
 use think\facade\Queue;
@@ -29,16 +33,18 @@ class MineController extends CommonController
     public function index()
     {
         $info = Db::name('user')->where('id', request()->uid)->field(['nickname', 'photo', 'is_owner', 'mobile', 'sex', 'money'])->find();
-        // 中间四位变*号
-        $info['mobile'] = preg_replace('/(\d{3})\d{4}(\d{4})/', '$1****$2', $info['mobile']);
-        if ($info['is_owner'] == 2) {// 是车主
-            $ownerId = Db::name('user_owner')->where('user_id', request()->uid)->value('id');
-            // 提现金额
-            $info['withdraw_money'] = Db::name('owner_withdraw')->where(['status' => 1, 'owner_id' => $ownerId])->sum('money');
-            // 保留2位小数
-            $info['withdraw_money'] = number_format($info['withdraw_money'], 2);
+        if (!empty($info)) {
+            // 中间四位变*号
+            $info['mobile'] = $this->strReplace($info['mobile']);
+            if ($info['is_owner'] == 2) {// 是车主
+                $ownerId = Db::name('user_owner')->where('user_id', request()->uid)->value('id');
+                // 提现金额
+                $info['withdraw_money'] = Db::name('owner_withdraw')->where(['status' => 1, 'owner_id' => $ownerId])->sum('money');
+                // 保留2位小数
+                $info['withdraw_money'] = number_format($info['withdraw_money'], 2);
+            }
         }
-        show(200, "获取数据成功！", $info);
+        show(200, "获取数据成功！", $info ?? []);
     }
 
     /**
@@ -76,7 +82,7 @@ class MineController extends CommonController
             show(403, "您不是车主，无法提现！");
         } else {
             $owner           = Db::name('user_owner')->where('user_id', request()->uid)->field(['bank_card_type', 'bank_card'])->find();
-            $number          = substr($owner['bank_card'], -4);
+            $number          = substr($owner['bank_card'], -4); // 截取最后四位
             $banType         = $owner['bank_card_type'];
             $data['actions'] = [
                 ['name' => '微信', 'withdraw_account' => '0'],
@@ -167,6 +173,141 @@ class MineController extends CommonController
             show(200, "提交成功，待审核中");
         } else {
             show(403, "提现失败！");
+        }
+    }
+
+    /**
+     * 获取个人资料
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public function getMaterial()
+    {
+        $info = Db::name('user')->where('id', request()->uid)->field([
+            'nickname',
+            'sex',
+            'user',
+            'age',
+            'region',
+            'qq',
+            'introduction',
+            'create_time',
+            'photo'
+        ])->find();
+        show(200, "获取数据成功！", $info);
+    }
+
+    /**
+     * 个人资料保存
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public function materialSave()
+    {
+        // 接收数据
+        $data = Request::only(['nickname', 'sex', 'age', 'region', 'qq', 'introduction', 'photo']);
+        // 验证数据
+        $validate = new MaterialValidate();
+        if (!$validate->sceneMaterial()->check($data)) {
+            show(403, $validate->getError());
+        }
+        $user = UserModel::find(request()->uid);
+        $res  = $user->save($data);
+        if ($res) {
+            show(200, "保存成功！");
+        } else {
+            show(403, "保存失败！");
+        }
+    }
+
+    /**
+     * 获取当前用户认证信息
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public function getCertificationInfo()
+    {
+        $info = Db::name('user')->where('id', request()->uid)->field(['is_owner', 'name', 'card'])->find();
+        if (!empty($info)) {
+            // 银行卡号中间位数变*
+            $info['card'] = $this->strReplace($info['card']);
+        }
+        if ($info['is_owner'] == '2') {
+            $owner                    = Db::name('user_owner')->where('user_id', request()->uid)->field(['patente_url', 'registration_url', 'car_url'])->find();
+            $info['patente_url']      = $owner['patente_url'] ? '1' : '0';
+            $info['registration_url'] = $owner['registration_url'] ? '1' : '0';
+            $info['car_url']          = $owner['car_url'] ? '1' : '0';
+        } else {
+            $info['patente_url']      = '0';
+            $info['registration_url'] = '0';
+            $info['car_url']          = '0';
+        }
+        show(200, "获取数据成功！", $info);
+    }
+
+    /**
+     * 实名认证下一步逻辑处理
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public function authenticationNext()
+    {
+        // 接收数据
+        $data = Request::only(['card_front', 'card_verso']);
+        // 查询是否已经上传身份证照片
+        $info = Db::name('user')->where('id', request()->uid)->field(['card_front', 'card_verso'])->find();
+        if (!empty($info['card_front']) && !empty($info['card_verso'])) {
+            show(403, "请勿重复实名认证！");
+        }
+        // 验证数据
+        $validate = new AuthenticationValidate();
+        if (!$validate->sceneAuthNext()->check($data)) {
+            show(403, $validate->getError());
+        }
+        // 更新数据
+        $user = UserModel::find(request()->uid);
+        $res  = $user->save($data);
+        if ($res) {
+            show(200, "上传成功！");
+        } else {
+            show(403, "上传失败！");
+        }
+    }
+
+    /**
+     * 实名认证提交逻辑处理
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public function authenticationSubmit()
+    {
+        // 接收数据
+        $data = Request::only(['card', 'name']);
+        // 查询是否已经上传身份证照片
+        $info = Db::name('user')->where('id', request()->uid)->field(['card_front', 'card_verso', 'card', 'name'])->find();
+        if (empty($info['card_front']) || empty($info['card_verso'])) {
+            show(403, "请先上传身份证正反面照片！");
+        }
+        if (!empty($info['card']) && !empty($info['name'])) {
+            show(403, "请勿重复实名认证！");
+        }
+        // 验证数据
+        $validate = new AuthenticationValidate();
+        if (!$validate->sceneAuthSubmit()->check($data)) {
+            show(403, $validate->getError());
+        }
+        // 更新数据
+        $user = UserModel::find(request()->uid);
+        $res  = $user->save($data);
+        if ($res) {
+            show(200, "实名成功！");
+        } else {
+            show(403, "实名失败！");
         }
     }
 }
