@@ -23,8 +23,8 @@ class AuthenticationValidate extends Validate
     protected $rule = [
         'card_front' => 'require',
         'card_verso' => 'require',
-        'card'=>'idCard|require',
-        'name'=>'chs|require'
+        'card'       => 'idCard|require',
+        'name'       => 'chs|require'
     ];
 
     /**
@@ -36,9 +36,9 @@ class AuthenticationValidate extends Validate
     protected $message = [
         'card_front.require' => '请上传身份证正面！',
         'card_verso.require' => '请上传身份证反面！',
-        'name.require'=>'真实姓名不能为空！',
-        'card.require'=>'身份证号码不能为空！',
-        'card.idCard'=>'身份证号码格式错误！',
+        'name.require'       => '真实姓名不能为空！',
+        'card.require'       => '身份证号码不能为空！',
+        'card.idCard'        => '身份证号码格式错误！',
     ];
 
     /**
@@ -56,6 +56,6 @@ class AuthenticationValidate extends Validate
      */
     public function sceneAuthSubmit(): AuthenticationValidate
     {
-        return $this->only(['name','card']);
+        return $this->only(['name', 'card']);
     }
 }

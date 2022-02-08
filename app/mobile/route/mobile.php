@@ -68,4 +68,8 @@ Route::group('mine',function (){
     Route::get('certification','getCertificationInfo');
     Route::post('authentication/next','authenticationNext');
     Route::post('authentication/submit','authenticationSubmit');
+    Route::post('withdraw/info/submit','submitWithdrawInfo');
+    Route::post('car/info/submit','submitCarInfo');
+    Route::post('patente/submit','submitPatente');
+    Route::post('registration/submit','submitRegistration');
 })->prefix('MineController/');

@@ -12,6 +12,7 @@ namespace app\mobile\controller;
 
 
 use app\mobile\middleware\AuthMiddleware;
+use app\mobile\model\UserOwnerModel;
 use think\facade\Db;
 
 class CommonController extends \app\BaseController

@@ -13,9 +13,13 @@ namespace app\mobile\controller;
 
 use app\mobile\model\OwnerWithdrawModel;
 use app\mobile\model\UserModel;
+use app\mobile\model\UserOwnerModel;
 use app\mobile\validate\AuthenticationValidate;
+use app\mobile\validate\CarInfoValidate;
 use app\mobile\validate\MaterialValidate;
 use app\mobile\validate\MyMoneyValidate;
+use app\mobile\validate\PatenteRegistrationValidate;
+use app\mobile\validate\WithdrawInfoValidate;
 use think\api\Client;
 use think\facade\Cache;
 use think\facade\Db;
@@ -231,19 +235,25 @@ class MineController extends CommonController
     public function getCertificationInfo()
     {
         $info = Db::name('user')->where('id', request()->uid)->field(['is_owner', 'name', 'card'])->find();
-        if (!empty($info)) {
+        if (!empty($info['card'])) {
             // 银行卡号中间位数变*
             $info['card'] = $this->strReplace($info['card']);
         }
-        if ($info['is_owner'] == '2') {
-            $owner                    = Db::name('user_owner')->where('user_id', request()->uid)->field(['patente_url', 'registration_url', 'car_url'])->find();
+        if ($info['is_owner'] == '0') {
+            $owner                    = Db::name('user_owner')->where('user_id', request()->uid)->find();
             $info['patente_url']      = $owner['patente_url'] ? '1' : '0';
             $info['registration_url'] = $owner['registration_url'] ? '1' : '0';
-            $info['car_url']          = $owner['car_url'] ? '1' : '0';
-        } else {
-            $info['patente_url']      = '0';
-            $info['registration_url'] = '0';
-            $info['car_url']          = '0';
+            $info['car_url']          = $owner['car_url']
+            && $owner['plate_number']
+            && $owner['capacity']
+            && $owner['color'] ? '1' : '0';
+            $info['withdraw_info']    = $owner['alipay']
+            && $owner['alipay_name']
+            && $owner['wxpay']
+            && $owner['wxpay_name']
+            && $owner['bank_card']
+            && $owner['bank_card_name']
+            && $owner['bank_card_type'] ? '1' : '0';
         }
         show(200, "获取数据成功！", $info);
     }
@@ -259,9 +269,11 @@ class MineController extends CommonController
         // 接收数据
         $data = Request::only(['card_front', 'card_verso']);
         // 查询是否已经上传身份证照片
-        $info = Db::name('user')->where('id', request()->uid)->field(['card_front', 'card_verso'])->find();
+        $info = Db::name('user')->where('id', request()->uid)->field(['card_front', 'card_verso', 'is_owner'])->find();
         if (!empty($info['card_front']) && !empty($info['card_verso'])) {
-            show(403, "请勿重复实名认证！");
+            if ($info['is_owner'] !== '1' && $info['is_owner'] !== '2') {
+                show(403, "请勿重复实名认证！");
+            }
         }
         // 验证数据
         $validate = new AuthenticationValidate();
@@ -289,12 +301,14 @@ class MineController extends CommonController
         // 接收数据
         $data = Request::only(['card', 'name']);
         // 查询是否已经上传身份证照片
-        $info = Db::name('user')->where('id', request()->uid)->field(['card_front', 'card_verso', 'card', 'name'])->find();
+        $info = Db::name('user')->where('id', request()->uid)->field(['card_front', 'card_verso', 'card', 'name', 'is_owner'])->find();
         if (empty($info['card_front']) || empty($info['card_verso'])) {
             show(403, "请先上传身份证正反面照片！");
         }
         if (!empty($info['card']) && !empty($info['name'])) {
-            show(403, "请勿重复实名认证！");
+            if ($info['is_owner'] !== '1' && $info['is_owner'] !== '2') {
+                show(403, "请勿重复实名认证！");
+            }
         }
         // 验证数据
         $validate = new AuthenticationValidate();
@@ -308,6 +322,152 @@ class MineController extends CommonController
             show(200, "实名成功！");
         } else {
             show(403, "实名失败！");
+        }
+    }
+
+    /**
+     * 提交提现信息
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public function submitWithdrawInfo()
+    {
+        // 接收数据
+        $data = Request::only(['alipay', 'alipay_name', 'wxpay', 'wxpay_name', 'bank_card', 'bank_card_name', 'bank_card_type']);
+        // 验证数据
+        $validate = new WithdrawInfoValidate();
+        if (!$validate->sceneWithdrawInfo()->check($data)) {
+            show(403, $validate->getError());
+        }
+        $info  = Db::name('user')->where('id', request()->uid)->field(['is_owner'])->find();
+        $owner = Db::name('user_owner')->where('user_id', request()->uid)->field([
+            'alipay',
+            'alipay_name',
+            'wxpay',
+            'wxpay_name',
+            'bank_card',
+            'bank_card_name',
+            'bank_card_type'
+        ])->find();
+        if (!empty($owner)
+            && !empty($owner['alipay'])
+            && !empty($owner['alipay_name'])
+            && !empty($owner['wxpay'])
+            && !empty($owner['wxpay_name'])
+            && !empty($owner['bank_card'])
+            && !empty($owner['bank_card_name'])
+            && !empty($owner['bank_card_type'])) {
+            if ($info['is_owner'] !== '1' && $info['is_owner'] !== '2') {
+                show(403, "请勿重复填写！");
+            }
+        }
+        $this->authBase($owner, $data);
+    }
+
+    /**
+     * 车辆信息提交
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public function submitCarInfo()
+    {
+        // 接收数据
+        $data = Request::only(['plate_number', 'capacity', 'color', 'car_url']);
+        // 验证数据
+        $validate = new CarInfoValidate();
+        if (!$validate->sceneCarInfo()->check($data)) {
+            show(403, $validate->getError());
+        }
+        $info  = Db::name('user')->where('id', request()->uid)->field(['is_owner'])->find();
+        $owner = Db::name('user_owner')->where('user_id', request()->uid)->field([
+            'plate_number',
+            'capacity',
+            'color',
+            'car_url'
+        ])->find();
+        if (!empty($owner)
+            && !empty($owner['plate_number'])
+            && !empty($owner['capacity'])
+            && !empty($owner['color'])
+            && !empty($owner['car_url'])) {
+            if ($info['is_owner'] !== '1' && $info['is_owner'] !== '2') {
+                show(403, "请勿重复提交！");
+            }
+        }
+        $this->authBase($owner, $data);
+    }
+
+    /**
+     * 提交驾驶证
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public function submitPatente()
+    {
+        // 接收数据
+        $data = Request::only(['patente_url']);
+        // 验证数据
+        $validate = new PatenteRegistrationValidate();
+        if (!$validate->scenePatente()->check($data)) {
+            show(403, $validate->getError());
+        }
+        $info  = Db::name('user')->where('id', request()->uid)->field(['is_owner'])->find();
+        $owner = Db::name('user_owner')->where('user_id', request()->uid)->field(['patente_url'])->find();
+        if (!empty($owner) && !empty($owner['patente_url'])) {
+            if ($info['is_owner'] !== '1' && $info['is_owner'] !== '2') {
+                show(403, "请勿重复提交！");
+            }
+        }
+        $this->authBase($owner, $data);
+    }
+
+    /**
+     * 提交行驶证
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public function submitRegistration()
+    {
+        // 接收数据
+        $data = Request::only(['registration_url']);
+        // 验证数据
+        $validate = new PatenteRegistrationValidate();
+        if (!$validate->sceneRegistration()->check($data)) {
+            show(403, $validate->getError());
+        }
+        $info  = Db::name('user')->where('id', request()->uid)->field(['is_owner'])->find();
+        $owner = Db::name('user_owner')->where('user_id', request()->uid)->field(['registration_url'])->find();
+        if (!empty($owner) && !empty($owner['registration_url'])) {
+            if ($info['is_owner'] !== '1' && $info['is_owner'] !== '2') {
+                show(403, "请勿重复提交！");
+            }
+        }
+        $this->authBase($owner, $data);
+    }
+
+    /**
+     * 车主认证公共代码
+     * @param array $owner 车主信息
+     * @param array $data 提交信息
+     */
+    private function authBase(array $owner, array $data)
+    {
+        if (!empty($owner)) {
+            // 存在信息则更新
+            $res = UserOwnerModel::where('user_id', request()->uid)->save($data);
+        } else {
+            // 添加
+            $data['user_id'] = request()->uid;
+            $res             = UserOwnerModel::create($data);
+        }
+        if ($res) {
+            show(200, "提交成功！");
+        } else {
+            show(403, "提交失败！");
         }
     }
 }
