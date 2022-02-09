@@ -234,7 +234,7 @@ class MineController extends CommonController
      */
     public function getCertificationInfo()
     {
-        $info = Db::name('user')->where('id', request()->uid)->field(['is_owner', 'name', 'card'])->find();
+        $info = Db::name('user')->where('id', request()->uid)->field(['is_owner', 'name', 'card', 'cause'])->find();
         if (!empty($info['card'])) {
             // 银行卡号中间位数变*
             $info['card'] = $this->strReplace($info['card']);
@@ -469,5 +469,24 @@ class MineController extends CommonController
         } else {
             show(403, "提交失败！");
         }
+    }
+
+    /**
+     * 我的订单列表
+     * @throws \think\db\exception\DbException
+     */
+    public function indentList()
+    {
+        // 接收数据
+        $data = Request::only(['per_page', 'current_page']);
+        $info = Db::name('user_buylog')->where('uid', request()->uid)
+            ->order('create_time', 'desc')
+            ->paginate([
+                'list_rows' => $data['per_page'],
+                'query'     => request()->param(),
+                'var_page'  => 'page',
+                'page'      => $data['current_page']
+            ]);
+        show(200, "获取数据成功！", $info->toArray() ?? []);
     }
 }

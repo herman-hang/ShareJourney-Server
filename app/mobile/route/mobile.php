@@ -72,4 +72,5 @@ Route::group('mine',function (){
     Route::post('car/info/submit','submitCarInfo');
     Route::post('patente/submit','submitPatente');
     Route::post('registration/submit','submitRegistration');
+    Route::get('indent/list','indentList');
 })->prefix('MineController/');
