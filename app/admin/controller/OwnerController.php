@@ -43,7 +43,7 @@ class OwnerController extends CommonController
     }
 
     /**
-     * 编辑车主状态
+     * 修改车主状态
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
@@ -222,7 +222,7 @@ class OwnerController extends CommonController
             ->view('user_owner', 'id as owner_id,service,km,alipay,alipay_name,wxpay,wxpay_name,bank_card,bank_card_name,bank_card_type', 'user_owner.id=owner_withdraw.owner_id')
             ->where('owner_withdraw.id', $id)
             ->find();
-        show(200, "获取数据成功！", $info);
+        show(200, "获取数据成功！", $info ?? []);
     }
 
     /**

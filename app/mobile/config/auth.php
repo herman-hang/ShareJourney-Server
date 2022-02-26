@@ -17,5 +17,6 @@ return [
         'LoginController/bindPhone',// 微信授权登录绑定手机
         'RegisterController/register',// 注册
         'RegisterController/sendRegisterCode',// 注册发送验证码
+        'PayController/wechatPayCallback'// 微信小程序支付回调
     ]
 ];

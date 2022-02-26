@@ -74,4 +74,97 @@ class CommonController extends \app\BaseController
         return preg_replace('/(\d{' . $startLen . '})\d+(\d{' . $endLen . '})/', '${1}' . $repStr . '${2}', $str);
     }
 
+    /**
+     * HTTP请求
+     * @param string $url
+     * @param array $param
+     * @param string $method
+     * @return false|string
+     */
+    public function http(string $url, array $param = [], string $method = 'GET')
+    {
+        $opts = ['http' => [
+            'method'  => 'POST',
+            'header'  => 'Content-type: application/x-www-form-urlencoded',
+            'content' => http_build_query($param)
+        ]];
+        return json_decode(file_get_contents($url, false, stream_context_create($opts)));
+    }
+
+    /**
+     * 检测当前用户/车主是否有正在进行的订单
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public function checkIndentStatus()
+    {
+        $oneself = Db::view('journey', 'user_id')
+            ->view('journey_pass', 'status', 'journey_pass.journey_id=journey.id')
+            ->where(['journey.user_id' => request()->uid, 'journey_pass.status' => '0'])
+            ->find();
+        $group   = Db::view('journey_user', 'user_id')
+            ->view('journey_pass', 'status', 'journey_pass.journey_id=journey_user.journey_id')
+            ->where(['journey_user.user_id' => request()->uid, 'journey_pass.status' => '0'])
+            ->find();
+        if (!empty($oneself) || !empty($group)) {
+            show(403, "您有一个订单正在进行中！");
+        }
+    }
+
+    /**
+     * 获取出行的出发地和最终目的地
+     * @param array $data 旅行路线数据
+     * @return array
+     */
+    protected function getStartEnd(array $data): array
+    {
+        $siteCount = count($data['site']);
+        if ($siteCount == 2) {
+            $journey['start'] = $data['site'][0]['destination'];
+            $journey['end']   = $data['site'][1]['destination'];
+        } else {
+            foreach ($data['site'] as $key => $val) {
+                if ($val['id'] == 0) {
+                    $journey['start'] = $val['destination'];
+                } else if ($val['id'] == 11) {
+                    $journey['end'] = $val['destination'];
+                }
+            }
+        }
+        return $journey ?? [];
+    }
+
+    /**
+     * 验证用户是否为车主
+     * @param string $type 0为前端调用，1为后端调用
+     */
+    public function checkUser(string $type = '0')
+    {
+        $isOwner = Db::name('user')->where('id', request()->uid)->value('is_owner');
+        if ($type === '0') {
+            $isOwner !== '2' ? show(403, "您不是车主！") : show(200, "您是车主！");
+        } else {
+            if ($isOwner !== '2') {
+                show(403, "您不是车主！");
+            }
+        }
+    }
+
+    /**
+     * 验证用户是否实名认证
+     * @param string $type 0为前端调用，1为后端调用
+     */
+    public function checkUserAuthentication(string $type = '0')
+    {
+        $user = Db::name('user')->where('id', request()->uid)->field(['name', 'card'])->find();
+        if ($type === '0') {
+            empty($user['name']) || empty($user['card']) ? show(403, "抱歉！您还未实名！") : show(200, "您已通过实名认证！");
+        } else {
+            if (empty($user['name']) || empty($user['card'])) {
+                show(403, "抱歉！您还未实名！");
+            }
+        }
+    }
+
 }

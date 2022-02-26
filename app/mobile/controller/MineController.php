@@ -479,7 +479,7 @@ class MineController extends CommonController
     {
         // 接收数据
         $data = Request::only(['per_page', 'current_page']);
-        $info = Db::name('user_buylog')->where('uid', request()->uid)
+        $info = Db::name('user_buylog')->where('user_id', request()->uid)
             ->order('create_time', 'desc')
             ->paginate([
                 'list_rows' => $data['per_page'],

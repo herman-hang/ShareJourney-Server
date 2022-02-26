@@ -1,63 +1,67 @@
 {
-    "name": "topthink/think",
-    "description": "the new thinkphp framework",
-    "type": "project",
-    "keywords": [
-        "framework",
-        "thinkphp",
-        "ORM"
-    ],
-    "homepage": "http://thinkphp.cn/",
-    "license": "Apache-2.0",
-    "authors": [
-        {
-            "name": "liu21st",
-            "email": "liu21st@gmail.com"
-        },
-        {
-            "name": "yunwuxin",
-            "email": "448901948@qq.com"
-        }        
-    ],
-    "require": {
-        "php": ">=7.1.0",
-        "topthink/framework": "^6.0.0",
-        "topthink/think-orm": "^2.0",
-        "topthink/think-multi-app": "^1.0",
-        "thans/tp-jwt-auth": "^1.2",
-        "thans/thinkphp-filesystem-cloud": "^1.0",
-        "yurunsoft/yurun-oauth-login": "^3.0",
-        "edward1108/edward-captcha": "^1.1",
-        "topthink/think-queue": "^3.0",
-      "ext-iconv": "*",
-        "topthink/think-api": "^1.0",
-      "ext-json": "*",
-        "phpmailer/phpmailer": "^6.5",
-        "topthink/think-view": "^1.0",
-        "fzaninotto/faker": "^1.9",
-        "fastknife/ajcaptcha": "^1.1",
-        "xxh/think-wxminihelper": "^1.0",
-      "ext-bcmath": "*"
+  "name": "topthink/think",
+  "description": "the new thinkphp framework",
+  "type": "project",
+  "keywords": [
+    "framework",
+    "thinkphp",
+    "ORM"
+  ],
+  "homepage": "http://thinkphp.cn/",
+  "license": "Apache-2.0",
+  "authors": [
+    {
+      "name": "liu21st",
+      "email": "liu21st@gmail.com"
     },
-    "require-dev": {
-        "symfony/var-dumper": "^4.2",
-        "topthink/think-trace":"^1.0"
-    },
-    "autoload": {
-        "psr-4": {
-            "app\\": "app"
-        },
-        "psr-0": {
-            "": "extend/"
-        }
-    },
-    "config": {
-        "preferred-install": "dist"
-    },
-    "scripts": {
-        "post-autoload-dump": [
-            "@php think service:discover",
-            "@php think vendor:publish"
-        ]
+    {
+      "name": "yunwuxin",
+      "email": "448901948@qq.com"
     }
+  ],
+  "require": {
+    "php": ">=7.1.0",
+    "topthink/framework": "^6.0.0",
+    "topthink/think-orm": "^2.0",
+    "topthink/think-multi-app": "^1.0",
+    "thans/tp-jwt-auth": "^1.2",
+    "thans/thinkphp-filesystem-cloud": "^1.0",
+    "yurunsoft/yurun-oauth-login": "^3.0",
+    "edward1108/edward-captcha": "^1.1",
+    "topthink/think-queue": "^3.0",
+    "ext-iconv": "*",
+    "topthink/think-api": "^1.0",
+    "ext-json": "*",
+    "phpmailer/phpmailer": "^6.5",
+    "topthink/think-view": "^1.0",
+    "fzaninotto/faker": "^1.9",
+    "fastknife/ajcaptcha": "^1.1",
+    "xxh/think-wxminihelper": "^1.0",
+    "ext-bcmath": "*",
+    "ext-simplexml": "*",
+    "ext-libxml": "*",
+    "ext-curl": "*",
+    "yansongda/pay": "~3.0.0"
+  },
+  "require-dev": {
+    "symfony/var-dumper": "^4.2",
+    "topthink/think-trace": "^1.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "app\\": "app"
+    },
+    "psr-0": {
+      "": "extend/"
+    }
+  },
+  "config": {
+    "preferred-install": "dist"
+  },
+  "scripts": {
+    "post-autoload-dump": [
+      "@php think service:discover",
+      "@php think vendor:publish"
+    ]
+  }
 }

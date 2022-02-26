@@ -99,7 +99,7 @@ class UserController extends CommonController
             if (!$validate->sceneCheckOwner()->check($data['owner'])) {
                 show(403, $validate->getError());
             }
-            $owner           = Db::name('user_owner')->where('user_id', $data['id'])->field('id')->find();
+            $owner                    = Db::name('user_owner')->where('user_id', $data['id'])->field('id')->find();
             $data['owner']['user_id'] = $data['id'];
             if (empty($owner)) {
                 UserOwnerModel::create($data['owner']);
@@ -199,7 +199,7 @@ class UserController extends CommonController
         $data = Request::only(['keywords', 'per_page', 'current_page']);
         //查询所有用户
         $info = Db::name('user_buylog')
-            ->whereLike('indent|uid|start|end', "%" . $data['keywords'] . "%")
+            ->whereLike('indent|user_id|start|end', "%" . $data['keywords'] . "%")
             ->order('create_time', 'desc')
             ->paginate([
                 'list_rows' => $data['per_page'],

@@ -15,6 +15,9 @@ use think\facade\Route;
  */
 Route::group('base', function () {
     Route::post('upload', 'upload');
+    Route::get('check/user','checkUser');
+    Route::get('check/indent/status','checkIndentStatus');
+    Route::get('check/authentication','checkUserAuthentication');
 })->prefix('CommonController/');
 
 /**
@@ -74,3 +77,29 @@ Route::group('mine',function (){
     Route::post('registration/submit','submitRegistration');
     Route::get('indent/list','indentList');
 })->prefix('MineController/');
+
+/**
+ * 首页相关路由
+ */
+Route::group('index',function (){
+    Route::get('trip/compute','tripData');
+    Route::get('user/line','getLine');
+    Route::get('navigation/journey','getJourney');
+    Route::post('edit/order','editOrder');
+    Route::post('indent/start','setOut');
+})->prefix('IndexController/')->middleware(\app\admin\middleware\CheckIpMiddleware::class);
+
+/**
+ * 支付类相关路由
+ */
+Route::group('pay',function (){
+    Route::post('wechat','wechatPay');
+    Route::get('wechat/callback','wechatPayCallback');
+})->prefix('PayController/')->middleware(\app\admin\middleware\CheckIpMiddleware::class);
+
+/**
+ * 车主相关路由
+ */
+Route::group('owner',function (){
+    Route::post('start','start');
+})->prefix('OwnerController/')->middleware(\app\admin\middleware\CheckIpMiddleware::class);
