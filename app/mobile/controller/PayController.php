@@ -13,10 +13,12 @@ namespace app\mobile\controller;
 
 use app\mobile\model\JourneyModel;
 use app\mobile\model\JourneyPassModel;
-use app\mobile\model\UserBuyLog;
+use app\mobile\model\UserBuyLogModel;
 use app\mobile\validate\PayValidate;
+use think\App;
 use think\facade\Cache;
 use think\facade\Db;
+use think\facade\Queue;
 use think\facade\Request;
 use Yansongda\Pay\Pay;
 
@@ -95,7 +97,7 @@ class PayController extends CommonController
         $indent['start'] = $site['start'];
         $indent['end']   = $site['end'];
         // 生成订单
-        $buyLog = UserBuyLog::create($indent);
+        $buyLog = UserBuyLogModel::create($indent);
         if ($buyLog) {
             $data['indent']         = $tradeNo;
             $data['user_id']        = request()->uid;
@@ -122,11 +124,12 @@ class PayController extends CommonController
         // 获取缓存消息
         $info = Cache::get($tradeNo);
         if (empty($info)) return false;
+        $deadline                  = strtotime($info['trip']['deadline']);
         $site                      = $this->getStartEnd($info);
         $journey['start']          = $site['start'];
         $journey['end']            = $site['end'];
         $journey['type']           = $info['type'];
-        $journey['deadline']       = strtotime($info['trip']['deadline']);
+        $journey['deadline']       = $deadline;
         $journey['trip']           = $info['trip']['number'];
         $journey['user_id']        = $info['user_id'];
         $journey['scheduled_time'] = $info['scheduled_time'];
@@ -158,8 +161,11 @@ class PayController extends CommonController
             }
             if ($journeyPassResult) {
                 Cache::delete($tradeNo);
-                $data['journey_id'] = $journeyResult->id;
-                show(200, "支付成功！", $data);
+                // 延迟秒数
+                $delay = $deadline - time();
+                // 推送到消息队列
+                Queue::later($delay, 'app\mobile\job\RefreshJourneyJob', [], 'refresh_journey_info');
+                show(200, "支付成功！");
             }
         }
         /*Pay::config($this->getWechatPayConfig());
@@ -173,6 +179,131 @@ class PayController extends CommonController
 
         }
         return Pay::wechat()->success();*/
+    }
+
+    public function callOwnerWechatPay()
+    {
+        // 检测是否有进行的订单有直接返回
+        $this->checkIndentStatus();
+        // 接收数据
+        $data = Request::only(['code', 'journey', 'trip']);
+        // 验证数据
+        $validate = new PayValidate();
+        if (!$validate->sceneCallOwnerWechatPay()->check($data)) {
+            show(403, $validate->getError());
+        }
+
+        /*if (request()->scheme() !== 'https') {
+            show(403, '请配置HTTPS协议进行支付！');
+        }*/
+        // 车主的旅途信息
+        $ownerJourneyInfo = Db::name('journey')->where('id', $data['journey']['id'])->find();
+        // 判断是否超载
+        if ($ownerJourneyInfo['sum'] - $ownerJourneyInfo['trip'] < $data['trip']['number']) {
+            show(403, "旅客过多，车辆已超载！");
+        }
+        // 获取缓存数据
+        $cacheData = Cache::get('call_trip_data_' . request()->uid);
+        // 订单号
+        $tradeNo = trade_no();
+
+        /****************************************** 这里编写发起支付模块开始 ***********************************************/
+
+        /****************************************** 这里编写发起支付模块结束 ***********************************************/
+
+        // 记录订单
+        $indent['user_id']      = request()->uid;
+        $indent['indent']       = $tradeNo;
+        $indent['pay_type']     = '0';
+        $indent['buy_ip']       = Request::ip();
+        $indent['status']       = '0';// 待付款状态
+        $indent['introduction'] = '一笔旅行出行车费';
+        $indent['money']        = $cacheData['money'];
+        $indent['start']        = $ownerJourneyInfo['start'];
+        $indent['end']          = $ownerJourneyInfo['end'];
+        $indent['km']           = $cacheData['km'];
+        // 生成订单
+        $buyLog = UserBuyLogModel::create($indent);
+        if ($buyLog) {
+            $data['indent']         = $tradeNo;
+            $data['user_id']        = request()->uid;
+            $data['scheduled_time'] = $cacheData['time'];
+            // 缓存数据,有效期两个小时
+            Cache::set($tradeNo, $data, 7200);
+            // 删除缓存
+            Cache::delete('call_trip_data_' . request()->uid);
+            $this->callOwnerWechatPayCallback($tradeNo);// 测试专用，正式环境请注释这一行
+            show(200, '订单生成完成！', $payData ?? []);
+        }
+    }
+
+    /**
+     * 呼叫车主发起支付回调
+     * @param $tradeNo
+     * @return false
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public function callOwnerWechatPayCallback($tradeNo)
+    {
+        // 获取缓存消息
+        $info = Cache::get($tradeNo);
+        if (empty($info)) return false;
+        // 车主的旅途信息
+        $ownerJourneyInfo = Db::name('journey')->where('id', $info['journey']['id'])->find();
+        // 插入旅途表
+        $journeyResult = JourneyModel::create([
+            'start'          => $ownerJourneyInfo['start'],
+            'end'            => $ownerJourneyInfo['end'],
+            'type'           => '0',
+            'deadline'       => strtotime($info['trip']['deadline']),
+            'status'         => '1',
+            'user_id'        => $info['user_id'],
+            'trip'           => $info['trip']['number'],
+            'scheduled_time' => $info['scheduled_time'],
+            'line'           => $ownerJourneyInfo['line']
+        ]);
+        if ($journeyResult) {
+            // 修改订单状态为已付款
+            Db::name('user_buylog')->where('indent', $tradeNo)->update(['status' => '1', 'journey_id' => $journeyResult->id]);
+            // 查询车主旅途信息的所有目的地，给当前用户复制一份
+            $journeyPass = Db::name('journey_pass')->where('journey_id', $info['journey']['id'])->select()->toArray();
+            if (!empty($journeyPass)) {
+                foreach ($journeyPass as $key => $val) {
+                    $atUserJourney[$key]['journey_id']   = $journeyResult->id;
+                    $atUserJourney[$key]['end']          = $val['end'];
+                    $atUserJourney[$key]['end_id']       = $val['end_id'];
+                    $atUserJourney[$key]['status']       = $val['status'];
+                    $atUserJourney[$key]['user_id']      = $info['user_id'];
+                    $atUserJourney[$key]['arrival_time'] = $val['arrival_time'];
+                }
+                $journeyPassResult = (new JourneyPassModel())->saveAll($atUserJourney ?? []);
+                if ($journeyPassResult) {
+                    Db::name('journey_user')->insert(['journey_id' => $info['journey']['id'], 'user_id' => $info['user_id']]);
+                    // 判断车辆是否满人
+                    if ($ownerJourneyInfo['sum'] == $ownerJourneyInfo['trip'] + $info['trip']['number']) {
+                        // 更新位已满人状态
+                        Db::name('journey')
+                            ->where('id', $info['journey']['id'])
+                            ->inc('trip', $info['trip']['number'])
+                            ->update(['status' => '2']);
+                    } else {
+                        // 正常增加旅客人数
+                        Db::name('journey')
+                            ->where('id', $info['journey']['id'])
+                            ->inc('trip', $info['trip']['number'])
+                            ->update();
+                    }
+                    Cache::delete($tradeNo);
+                    // 延迟秒数
+                    $delay = strtotime($info['trip']['deadline']) - time();
+                    // 推送到消息队列
+                    Queue::later($delay, 'app\mobile\job\RefreshJourneyJob', [], 'refresh_journey_info');
+                    show(200, "支付成功！");
+                }
+            }
+        }
     }
 
     /**

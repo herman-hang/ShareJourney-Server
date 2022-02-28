@@ -11,8 +11,10 @@
 namespace app\mobile\middleware;
 
 
+use app\mobile\controller\CommonController;
 use thans\jwt\exception\JWTException;
 use thans\jwt\facade\JWTAuth;
+use think\App;
 use think\facade\Config;
 use think\facade\Db;
 use think\facade\Request;
@@ -56,6 +58,11 @@ class AuthMiddleware
                 $request->uid = $token['uid']->getValue();
                 // 检测当前用户在当前终端是否已经在线
                 $this->checkLogin($token);
+                // 验证是否实名认证
+                $notAuth = array_map('strtolower', Config::get('auth')['not_auth']);
+                if (!in_array($url, array_merge($notAuth, $ontLogin))) {
+                    $this->checkUserAuthentication($token['uid']->getValue());
+                }
             } catch (JWTException $e) {
                 // 状态码-1为token在黑名单宽限期列表中，这是应该继续放行
                 if ($e->getCode() !== -1) {
@@ -92,6 +99,21 @@ class AuthMiddleware
             // 将token拉入黑名单
             JWTAuth::refresh();
             show(0, "登录异常！");
+        }
+    }
+
+    /**
+     * 验证用户是否实名认证
+     * @param string $uid
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    protected function checkUserAuthentication(string $uid)
+    {
+        $user = Db::name('user')->where('id', $uid)->field(['name', 'card'])->find();
+        if (empty($user['name']) || empty($user['card'])) {
+            show(401, "抱歉！您还未实名！");
         }
     }
 }

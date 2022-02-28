@@ -13,7 +13,7 @@ namespace app\mobile\model;
 
 use think\Model;
 
-class UserBuyLog extends Model
+class UserBuyLogModel extends Model
 {
     protected $table = 'xgh_user_buylog';
 }

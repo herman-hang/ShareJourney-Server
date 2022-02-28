@@ -22,11 +22,12 @@ class PayValidate extends Validate
      * @var array
      */
     protected $rule = [
-        'code' => 'require',
-        'site' => 'require',
-        'type' => 'require',
-        'trip' => 'require',
-        'line' => 'require'
+        'code'    => 'require',
+        'site'    => 'require',
+        'type'    => 'require',
+        'trip'    => 'require',
+        'line'    => 'require',
+        'journey' => 'require'
     ];
 
     /**
@@ -36,12 +37,22 @@ class PayValidate extends Validate
      * @var array
      */
     protected $message = [
-        'code.require' => '微信登录临时凭证不能为空！',
-        'site.require' => '旅途地址不能为空！',
-        'type.require' => '订单类型不能为空！',
-        'trip.require' => '出行信息不能为空！',
-        'line.require' => '出行轨迹线数据不能为空！',
+        'code.require'    => '微信登录临时凭证不能为空！',
+        'site.require'    => '旅途地址不能为空！',
+        'type.require'    => '订单类型不能为空！',
+        'trip.require'    => '出行信息不能为空！',
+        'line.require'    => '出行轨迹线数据不能为空！',
+        'journey.require' => '当前的旅途信息不能为空！',
     ];
+
+    /**
+     * 呼叫车主发起支付验证
+     * @return PayValidate
+     */
+    public function sceneCallOwnerWechatPay(): PayValidate
+    {
+        return $this->only(['code','trip','journey']);
+    }
 
     /**
      * 微信小程序发起支付

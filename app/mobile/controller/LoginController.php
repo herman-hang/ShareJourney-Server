@@ -279,6 +279,9 @@ class LoginController extends CommonController
         $key['secret'] = $mini['wx_mini_secret'];
         $wxHelper      = new WXLoginHelper($key);
         $result        = $wxHelper->checkLogin($data['code'], $data['param']['rawData'], $data['param']['signature'], $data['param']['encryptedData'], $data['param']['iv']);
+        if (empty($result['openId'])){
+            show(403,$result['message']);
+        }
         // 根据openid查询用户是否存在
         $user = UserModel::where('weixin_openid', $result['openId'])->find();
         if (!empty($user)) {

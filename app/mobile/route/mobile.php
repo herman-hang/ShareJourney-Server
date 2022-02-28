@@ -15,9 +15,9 @@ use think\facade\Route;
  */
 Route::group('base', function () {
     Route::post('upload', 'upload');
-    Route::get('check/user','checkUser');
-    Route::get('check/indent/status','checkIndentStatus');
-    Route::get('check/authentication','checkUserAuthentication');
+    Route::get('check/user', 'checkUser');
+    Route::get('check/indent/status', 'checkIndentStatus');
+    Route::get('check/authentication', 'checkUserAuthentication');
 })->prefix('CommonController/');
 
 /**
@@ -60,46 +60,60 @@ Route::group('captcha', function () {
 /**
  * 我的相关路由
  */
-Route::group('mine',function (){
-    Route::get('index','index');
-    Route::get('money','myMoney');
-    Route::get('withdraw','withdraw');
-    Route::post('withdraw/send/code','withdrawSendCode');
-    Route::post('withdraw/audit','withdrawAudit');
-    Route::get('material','getMaterial');
-    Route::post('material','materialSave');
-    Route::get('certification','getCertificationInfo');
-    Route::post('authentication/next','authenticationNext');
-    Route::post('authentication/submit','authenticationSubmit');
-    Route::post('withdraw/info/submit','submitWithdrawInfo');
-    Route::post('car/info/submit','submitCarInfo');
-    Route::post('patente/submit','submitPatente');
-    Route::post('registration/submit','submitRegistration');
-    Route::get('indent/list','indentList');
+Route::group('mine', function () {
+    Route::get('index', 'index');
+    Route::get('money', 'myMoney');
+    Route::get('withdraw', 'withdraw');
+    Route::post('withdraw/send/code', 'withdrawSendCode');
+    Route::post('withdraw/audit', 'withdrawAudit');
+    Route::get('material', 'getMaterial');
+    Route::post('material', 'materialSave');
+    Route::get('certification', 'getCertificationInfo');
+    Route::post('authentication/next', 'authenticationNext');
+    Route::post('authentication/submit', 'authenticationSubmit');
+    Route::post('withdraw/info/submit', 'submitWithdrawInfo');
+    Route::post('car/info/submit', 'submitCarInfo');
+    Route::post('patente/submit', 'submitPatente');
+    Route::post('registration/submit', 'submitRegistration');
+    Route::get('indent/list', 'indentList');
 })->prefix('MineController/');
 
 /**
  * 首页相关路由
  */
-Route::group('index',function (){
-    Route::get('trip/compute','tripData');
-    Route::get('user/line','getLine');
-    Route::get('navigation/journey','getJourney');
-    Route::post('edit/order','editOrder');
-    Route::post('indent/start','setOut');
-})->prefix('IndexController/')->middleware(\app\admin\middleware\CheckIpMiddleware::class);
+Route::group('index', function () {
+    Route::get('trip/compute', 'tripData');
+    Route::get('user/line', 'getLine');
+    Route::get('navigation/journey', 'getJourney');
+    Route::post('edit/order', 'editOrder');
+    Route::post('indent/start', 'setOut');
+    Route::get('owner/indent', 'getOwnerIndent');
+    Route::get('user/indent', 'getUserIndent');
+    Route::get('path/line', 'getPathLineData');
+})->prefix('IndexController/');
 
 /**
  * 支付类相关路由
  */
-Route::group('pay',function (){
-    Route::post('wechat','wechatPay');
-    Route::get('wechat/callback','wechatPayCallback');
-})->prefix('PayController/')->middleware(\app\admin\middleware\CheckIpMiddleware::class);
+Route::group('pay', function () {
+    Route::post('wechat', 'wechatPay');
+    Route::post('call/wechat', 'callOwnerWechatPay');
+    Route::get('wechat/callback', 'wechatPayCallback');
+    Route::get('call/wechat/callback', 'callOwnerWechatPayCallback');
+})->prefix('PayController/');
 
 /**
  * 车主相关路由
  */
-Route::group('owner',function (){
-    Route::post('start','start');
-})->prefix('OwnerController/')->middleware(\app\admin\middleware\CheckIpMiddleware::class);
+Route::group('owner', function () {
+    Route::post('start', 'start');
+    Route::post('invitation/user', 'invitationUser');
+    Route::get('trip/compute', 'indentCompute');
+})->prefix('OwnerController/');
+
+/**
+ * 旅途列表相关路由
+ */
+Route::group('journey', function () {
+    Route::get('owner/indent/list', 'list');
+})->prefix('JourneyController/');

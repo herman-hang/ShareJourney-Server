@@ -12,7 +12,9 @@ namespace app\mobile\controller;
 
 
 use app\mobile\middleware\AuthMiddleware;
-use app\mobile\model\UserOwnerModel;
+use app\mobile\model\JourneyModel;
+use app\mobile\model\JourneyPassModel;
+use app\mobile\model\UserBuyLogModel;
 use think\facade\Db;
 
 class CommonController extends \app\BaseController
@@ -99,13 +101,16 @@ class CommonController extends \app\BaseController
      */
     public function checkIndentStatus()
     {
-        $oneself = Db::view('journey', 'user_id')
+        $oneself           = Db::view('journey', 'user_id')
             ->view('journey_pass', 'status', 'journey_pass.journey_id=journey.id')
             ->where(['journey.user_id' => request()->uid, 'journey_pass.status' => '0'])
             ->find();
-        $group   = Db::view('journey_user', 'user_id')
-            ->view('journey_pass', 'status', 'journey_pass.journey_id=journey_user.journey_id')
-            ->where(['journey_user.user_id' => request()->uid, 'journey_pass.status' => '0'])
+        $journeyUserColumn = Db::name('journey_user')
+            ->where('user_id', request()->uid)
+            ->column('journey_id');
+        $group             = Db::name('journey_pass')
+            ->whereIn('journey_id', $journeyUserColumn)
+            ->where(['status' => '0', 'user_id' => request()->uid])
             ->find();
         if (!empty($oneself) || !empty($group)) {
             show(403, "您有一个订单正在进行中！");
@@ -152,19 +157,47 @@ class CommonController extends \app\BaseController
     }
 
     /**
-     * 验证用户是否实名认证
-     * @param string $type 0为前端调用，1为后端调用
+     * 验证用户是否实名认证（前端调用）
      */
-    public function checkUserAuthentication(string $type = '0')
+    public function checkUserAuthentication()
     {
         $user = Db::name('user')->where('id', request()->uid)->field(['name', 'card'])->find();
-        if ($type === '0') {
-            empty($user['name']) || empty($user['card']) ? show(403, "抱歉！您还未实名！") : show(200, "您已通过实名认证！");
-        } else {
-            if (empty($user['name']) || empty($user['card'])) {
-                show(403, "抱歉！您还未实名！");
-            }
+        empty($user['name']) || empty($user['card']) ? show(403, "抱歉！您还未实名！") : show(200, "您已通过实名认证！");
+
+    }
+
+
+    /**
+     * 更新列表中时间已截止的数据
+     */
+    public function editDeadlineData()
+    {
+        $journey = JourneyModel::where('status', '0')
+            ->whereTime('deadline', '<=', time())
+            ->column('id');
+        // 更新已过期的数据的状态为出发失败
+        $journeyResult = JourneyModel::whereIn('id', $journey)->where('status', '0')->update(['status' => '4']);
+        if ($journeyResult) {
+            JourneyPassModel::whereIn('journey_id', $journey)->where('status', '0')->update(['status' => '2']);
+            UserBuyLogModel::whereIn('journey_id', $journey)->update(['status' => '3']);
         }
+    }
+
+    /**
+     * 计算距离指定日期还有多少天/小时/分钟/秒数
+     * @param int $second 时间戳
+     * @return array
+     */
+    public function time2string(int $second): array
+    {
+        $day    = floor($second / (3600 * 24));
+        $second = $second % (3600 * 24);//除去整天之后剩余的时间
+        $hour   = floor($second / 3600);
+        $second = $second % 3600;//除去整小时之后剩余的时间
+        $minute = floor($second / 60);
+        $second = $second % 60;//除去整分钟之后剩余的时间
+        //返回字符串
+        return ['days' => $day, 'hours' => $hour, 'minutes' => $minute, 'seconds' => $second];
     }
 
 }
