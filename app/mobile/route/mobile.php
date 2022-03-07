@@ -63,7 +63,6 @@ Route::group('captcha', function () {
 Route::group('mine', function () {
     Route::get('index', 'index');
     Route::get('money', 'myMoney');
-    Route::get('withdraw', 'withdraw');
     Route::post('withdraw/send/code', 'withdrawSendCode');
     Route::post('withdraw/audit', 'withdrawAudit');
     Route::get('material', 'getMaterial');
@@ -76,6 +75,10 @@ Route::group('mine', function () {
     Route::post('patente/submit', 'submitPatente');
     Route::post('registration/submit', 'submitRegistration');
     Route::get('indent/list', 'indentList');
+    Route::get('withdraw/detail', 'withdrawDetail');
+    Route::get('withdraw/resubmit/audit', 'resubmitAudit');
+    Route::get('bill/income', 'income');
+    Route::get('withdraw', 'withdraw');
 })->prefix('MineController/');
 
 /**
@@ -117,3 +120,23 @@ Route::group('owner', function () {
 Route::group('journey', function () {
     Route::get('owner/indent/list', 'list');
 })->prefix('JourneyController/');
+
+/**
+ * 旅行记录相关路由
+ */
+Route::group('record', function () {
+    Route::get('list', 'list');
+})->prefix('RecordController/');
+
+/**
+ * 系统设置相关路由
+ */
+Route::group('system', function () {
+    Route::get('send/mobile/code', 'sendChangeMobileCode');
+    Route::get('send/email/code', 'sendChangeEmailCode');
+    Route::get('send/bind/email/code', 'sendBindEmailCode');
+    Route::get('query/email', 'queryEmail');
+    Route::post('change/mobile', 'changeMobile');
+    Route::post('change/email', 'changeEmail');
+    Route::post('bind/email', 'bindEmail');
+})->prefix('SystemController/');

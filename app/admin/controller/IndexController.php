@@ -89,7 +89,7 @@ class IndexController extends CommonController
         $week = -6;
         while ($week <= 0) {
             // 每日收入统计
-            $dayMoney = Db::name('user_buylog')->where('status', '1')->whereDay('create_time', date('Y-m-d', strtotime("{$week} day")))->sum('money');
+            $dayMoney = Db::name('user_buylog')->where('status', '1')->where(['status' => '1'])->whereDay('create_time', date('Y-m-d', strtotime("{$week} day")))->sum('money');
             // 防止为NULL造成报错
             if (empty($dayMoney)) {
                 $dayMoney = 0;
@@ -102,7 +102,7 @@ class IndexController extends CommonController
             }
             $userWeekData[] = $dayNewUser;
             // 每日完成订单
-            $dayOrder = Db::name('user_buylog')->where('status', '1')->whereDay('create_time', date('Y-m-d', strtotime("{$week} day")))->count();
+            $dayOrder = Db::name('user_buylog')->where('status', '1')->where(['status' => '1'])->whereDay('create_time', date('Y-m-d', strtotime("{$week} day")))->count();
             if (empty($dayOrder)) {
                 $dayOrder = 0;
             }
@@ -139,7 +139,7 @@ class IndexController extends CommonController
             ]
         ];
         // 消费日志
-        $buyLog          = Db::name('user_buylog')->field('uid,indent,money')->order('create_time', 'desc')->limit(5)->select();
+        $buyLog          = Db::name('user_buylog')->field('user_id,indent,money')->order('create_time', 'desc')->limit(5)->select();
         $data['buy_log'] = $buyLog;
         // 待提现订单
         $toAudit          = Db::name('owner_withdraw')->where('status', '0')->field('owner_id,indent,money')->order('create_time', 'desc')->limit(5)->select();

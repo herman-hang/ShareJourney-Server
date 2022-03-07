@@ -228,11 +228,31 @@ class IndexController extends CommonController
         $journeyModel         = JourneyModel::find($data['id']);
         $journeyModel->status = $data['status'];
         if ($journeyModel->save()) {
+            if (!empty($data['owner'])) {
+                // 正在进行的车主信息
+                $userDown = Db::name('journey')
+                    ->where([
+                        'owner_id' => $data['owner']['owner_id'],
+                        'user_id'  => $data['owner']['user_id'],
+                        'status'   => ['0', '2', '3']
+                    ])->field(['id', 'trip', 'status'])->find();
+            }
             if ($data['status'] === '5') {// 取消订单
                 JourneyPassModel::where(['user_id' => request()->uid, 'journey_id' => $data['id']])->update(['status' => '3']);
                 Db::name('user_buylog')
                     ->where('journey_id', $data['id'])
                     ->update(['status' => '2']);
+                if (!empty($data['owner']) && $journey['type'] === '0') {// 判断旅客是否已经上车
+                    if ($userDown) {
+                        if ($userDown['status'] === '2') {
+                            $condition = ['status' => '3', 'trip' => $userDown['trip'] - $journey['trip']];
+                        } else {
+                            $condition = ['trip' => $userDown['trip'] - $journey['trip']];
+                        }
+                        // 旅客下车，可载人数自增，并且对已满座状态改为未满座
+                        Db::name('journey')->where('id', $userDown['id'])->update($condition);
+                    }
+                }
             } else if ($data['status'] === '6') {// 确认订单
                 $journeyUser = Db::name('journey_user')->where('journey_id', $data['id'])->find();
                 if (empty($journeyUser) && $journey['type'] === '1') {// 车主订单没有旅客时不能确认订单，防止刷单行为
@@ -267,11 +287,18 @@ class IndexController extends CommonController
                         ->inc('expenditure', $userBuyLog['money'])
                         ->update();
                     // 旅客下车
-                    Db::name('journey')->where([
-                        'owner_id' => $data['owner']['owner_id'],
-                        'user_id'  => $data['owner']['user_id'],
-                        'status'   => ['2', '3']
-                    ])->dec('trip', $journey['trip'])->update(['status' => '3']);
+                    if (!empty($userDown)) {
+                        // 可载人数自增，并且对已满座状态改为未满座
+                        if ($userDown) {
+                            if ($userDown['status'] === '2') {
+                                $condition = ['status' => '3', 'trip' => $userDown['trip'] - $journey['trip']];
+                            } else {
+                                $condition = ['trip' => $userDown['trip'] - $journey['trip']];
+                            }
+                            // 旅客下车，可载人数自增，并且对已满座状态改为未满座
+                            Db::name('journey')->where('id', $userDown['id'])->update($condition);
+                        }
+                    }
                 }
                 JourneyPassModel::where(['user_id' => request()->uid, 'journey_id' => $data['id']])->update(['status' => '1', 'arrival_time' => time()]);
             }

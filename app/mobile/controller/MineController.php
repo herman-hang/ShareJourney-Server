@@ -12,6 +12,7 @@ namespace app\mobile\controller;
 
 
 use app\mobile\model\OwnerWithdrawModel;
+use app\mobile\model\UserBuyLogModel;
 use app\mobile\model\UserModel;
 use app\mobile\model\UserOwnerModel;
 use app\mobile\validate\AuthenticationValidate;
@@ -89,8 +90,8 @@ class MineController extends CommonController
             $number          = substr($owner['bank_card'], -4); // 截取最后四位
             $banType         = $owner['bank_card_type'];
             $data['actions'] = [
-                ['name' => '微信', 'withdraw_account' => '0'],
-                ['name' => '支付宝', 'withdraw_account' => '1'],
+                ['name' => '微信', 'withdraw_account' => '1'],
+                ['name' => '支付宝', 'withdraw_account' => '0'],
                 ['name' => "{$banType}（{$number}）", 'withdraw_account' => '2']
             ];
             show(200, "获取数据成功！", $data);
@@ -158,11 +159,14 @@ class MineController extends CommonController
             show(403, "验证码错误！");
         }
         // 查询用户信息
-        $user = Db::name('user')->where('id', request()->uid)->field(['is_owner'])->find();
+        $user = Db::name('user')->where('id', request()->uid)->field(['is_owner', 'money'])->find();
         // 查询车主信息
         $owner = Db::name('user_owner')->where('user_id', request()->uid)->find();
         if ($user['is_owner'] !== '2') {
             show(403, "您不是车主，无法提现");
+        }
+        if ($user['money'] - $info['withdraw_money'] < 0) {
+            show(403, "余额不足");
         }
         $res = OwnerWithdrawModel::create([
             'money'            => $info['withdraw_money'],
@@ -172,6 +176,8 @@ class MineController extends CommonController
             'owner_id'         => $owner['id']
         ]);
         if ($res) {
+            // 当前余额中扣除提现金额
+            Db::name('user')->where('id', request()->uid)->update(['money' => $user['money'] - $info['withdraw_money']]);
             // 删除缓冲
             Cache::delete('send_withdraw_code_' . request()->uid);
             show(200, "提交成功，待审核中");
@@ -480,6 +486,68 @@ class MineController extends CommonController
         // 接收数据
         $data = Request::only(['per_page', 'current_page']);
         $info = Db::name('user_buylog')->where('user_id', request()->uid)
+            ->field(['create_time', 'end', 'id', 'indent', 'introduction', 'journey_id', 'km', 'money', 'pay_type', 'start', 'status'])
+            ->order('create_time', 'desc')
+            ->paginate([
+                'list_rows' => $data['per_page'],
+                'query'     => request()->param(),
+                'var_page'  => 'page',
+                'page'      => $data['current_page']
+            ]);
+        show(200, "获取数据成功！", $info->toArray() ?? []);
+    }
+
+    /**
+     * 提现明细
+     * @throws \think\db\exception\DbException
+     */
+    public function withdrawDetail()
+    {
+        // 检测是否为车主
+        $this->checkUser('1');
+        // 接收数据
+        $data = Request::only(['per_page', 'current_page']);
+        $info = OwnerWithdrawModel::where('user_id', request()->uid)
+            ->order('create_time', 'desc')
+            ->paginate([
+                'list_rows' => $data['per_page'],
+                'query'     => request()->param(),
+                'var_page'  => 'page',
+                'page'      => $data['current_page']
+            ]);
+        show(200, "获取数据成功！", $info->toArray() ?? []);
+    }
+
+    /**
+     * 提现重新提交审核
+     * @throws \think\db\exception\DbException
+     */
+    public function resubmitAudit()
+    {
+        // 检测是否为车主
+        $this->checkUser('1');
+        $id  = Request::param('id');
+        $res = Db::name('owner_withdraw')->where('id', $id)->update(['status' => '0']);
+        if ($res) {
+            show(200, "提交成功！");
+        } else {
+            show(403, "提交失败");
+        }
+    }
+
+    /**
+     * 账单列表
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public function income()
+    {
+        $data = Request::only(['per_page', 'current_page']);
+        $owner = Db::name('user_owner')->where('user_id',request()->uid)->field(['id'])->find();
+        $info = UserBuyLogModel::whereOr('user_id', request()->uid)
+            ->whereOr('owner_id', $owner['id'])
+            ->field('user_id,indent,pay_type,create_time,status,introduction,money,start,end,km,collection_money,owner_id')
             ->order('create_time', 'desc')
             ->paginate([
                 'list_rows' => $data['per_page'],

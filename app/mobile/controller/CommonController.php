@@ -15,6 +15,7 @@ use app\mobile\middleware\AuthMiddleware;
 use app\mobile\model\JourneyModel;
 use app\mobile\model\JourneyPassModel;
 use app\mobile\model\UserBuyLogModel;
+use app\Request;
 use think\facade\Db;
 
 class CommonController extends \app\BaseController
@@ -163,7 +164,6 @@ class CommonController extends \app\BaseController
     {
         $user = Db::name('user')->where('id', request()->uid)->field(['name', 'card'])->find();
         empty($user['name']) || empty($user['card']) ? show(403, "抱歉！您还未实名！") : show(200, "您已通过实名认证！");
-
     }
 
 

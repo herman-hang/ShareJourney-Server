@@ -28,8 +28,9 @@ class JourneyController extends CommonController
         $data = Request::only(['per_page', 'current_page', 'keywords']);
         $info = Db::view('journey', 'id,start,sum,end,trip,owner_id,user_id,line,deadline')
             ->view('user', 'photo,name,mobile,sex', 'journey.user_id=user.id')
+            ->view('journey_pass','end','journey.id=journey_pass.journey_id')
             ->where(['journey.type' => '1', 'journey.status' => '0'])
-            ->whereLike('journey.start|journey.end', "%" . $data['keywords'] . "%")
+            ->whereLike('journey.start|journey.end|journey_pass.end', "%" . $data['keywords'] . "%")
             ->order('journey.create_time', 'desc')
             ->paginate([
                 'list_rows' => $data['per_page'],

@@ -277,7 +277,7 @@ class OwnerController extends CommonController
         if ($res) {
             // 构造信息，发送通知邮件
             $user                 = Db::name('user')->where('id', $id)->field('email,user,mobile')->find();
-            $system               = Db::name('system')->where('id', '1')->field('name')->find();
+            $system               = Db::name('system')->where('id', 1)->field('name')->find();
             $emailData['title']   = "恭喜您成为车主";
             $emailData['email']   = $user['email'];
             $emailData['user']    = $user['user'];

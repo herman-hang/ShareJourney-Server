@@ -23,6 +23,7 @@ return [
         'IndexController/getUserIndent',// 获取用户订单数据
         'PayController/wechatPayCallback',// 微信支付回调
         'PayController/callOwnerWechatPayCallback',// 呼叫车主发起支付回调
+        'JourneyController/list',// 旅途列表
     ],
     // 不用检测实名认证的路由
     'not_auth'=>[

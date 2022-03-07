@@ -34,6 +34,9 @@ class PasswordController
         }
         // 验证码
         $codeInfo = Cache::get('send_password_code_' . Request::ip());
+        if (empty($codeInfo)) {
+            show(403, "验证码已过期！");
+        }
         if ($data['code'] !== $codeInfo['code']) {
             show(403, "验证码错误！");
         }

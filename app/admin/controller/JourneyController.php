@@ -26,7 +26,7 @@ class JourneyController extends CommonController
         $data = Request::only(['keywords', 'per_page', 'current_page']);
         // 查询所有旅途信息
         $info = Db::name('journey')
-            ->whereLike('id|start|end|uid', "%" . $data['keywords'] . "%")
+            ->whereLike('id|start|end|user_id', "%" . $data['keywords'] . "%")
             ->order('create_time', 'desc')
             ->paginate([
                 'list_rows' => $data['per_page'],
@@ -46,8 +46,10 @@ class JourneyController extends CommonController
     public function query()
     {
         // 旅途ID
-        $id   = Request::param('id');
-        $info = Db::name('journey')->where('id', $id)->find();
+        $id              = Request::param('id');
+        $info            = Db::name('journey')->where('id', $id)->find();
+        $info['current'] = Db::name('journey_user')->where('journey_id', $id)->column('user_id');
+        $info['current'] = implode(',', $info['current']);
         show(200, "获取数据成功！", $info);
     }
 
@@ -59,10 +61,31 @@ class JourneyController extends CommonController
      */
     public function timeLine()
     {
-        // 旅途ID
-        $id   = Request::param('id');
-        $info = Db::name('journey_pass')->where('journey_id', $id)->order('scheduled_time', 'asc')->select();
-        show(200, "获取数据成功！", $info->toArray() ?? []);
+        // 接收数据
+        $data        = Request::only(['id']);
+        $journey     = Db::name('journey')
+            ->where('id', $data['id'])
+            ->field(['start'])->find();
+        $journeyPass = Db::name('journey_pass')
+            ->where(['journey_id' => $data['id']])
+            ->field(['end', 'end_id', 'status', 'arrival_time'])
+            ->order('end_id', 'asc')
+            ->select();
+        $info        = [['id' => 0, 'content' => $journey['start'], 'type' => 'success', 'icon' => 'el-icon-check']];
+        if (!empty($journeyPass)) {
+            foreach ($journeyPass as $key => $val) {
+                if ($val['status'] === '1') {
+                    $info[$val['end_id']]['type']         = 'success';
+                    $info[$val['end_id']]['icon']         = 'el-icon-check';
+                    $info[$val['end_id']]['arrival_time'] = date('Y-m-d H:i:s', $val['arrival_time']);
+                    $info[$val['end_id']]['status']       = $val['status'];
+                }
+                $info[$val['end_id']]['id']      = $val['end_id'];
+                $info[$val['end_id']]['content'] = $val['end'];
+                $info[$val['end_id']]['status']  = $val['status'];
+            }
+        }
+        show(200, "获取数据成功！", ['data' => $info]);
     }
 
     /**

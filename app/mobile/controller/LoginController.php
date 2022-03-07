@@ -200,6 +200,9 @@ class LoginController extends CommonController
         }
         // 验证码
         $codeInfo = Cache::get('send_login_code_' . Request::ip());
+        if (empty($codeInfo)) {
+            show(403, "验证码已过期！");
+        }
         if ($data['code'] !== $codeInfo['code']) {
             show(403, "验证码错误！");
         }
@@ -350,6 +353,9 @@ class LoginController extends CommonController
         $code = Request::only(['verification', 'code']);
         // 获取手机号码数据
         $data = Cache::get('send_weixin_login_bind_code_' . Request::ip());
+        if (empty($data)) {
+            show(403, "验证码已过期！");
+        }
         if ($code['code'] !== $data['code']) {
             show(403, "手机验证码错误！");
         }

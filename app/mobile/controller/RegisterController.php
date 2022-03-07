@@ -42,6 +42,9 @@ class RegisterController extends CommonController
         }
         // 验证验证码是否正确
         $codeInfo = Cache::get('send_register_code_' . Request::ip());
+        if (empty($codeInfo)) {
+            show(403, "验证码已过期！");
+        }
         if ($data['code'] !== $codeInfo['code']) {
             show(403, "验证码错误！");
         }
