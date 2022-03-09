@@ -456,11 +456,46 @@ class MineController extends CommonController
     }
 
     /**
-     * 车主认证公共代码
-     * @param array $owner 车主信息
+     * 提交车主认证
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public function authSubmitAudit()
+    {
+        // 查询车主信息
+        $owner = Db::name('user_owner')->where('user_id', request()->uid)->find();
+        if (empty($owner['patente_url'])
+            || empty($owner['registration_url'])
+            || empty($owner['car_url'])
+            || empty($owner['plate_number'])
+            || empty($owner['capacity'])
+            || empty($owner['color'])
+            || empty($owner['alipay'])
+            || empty($owner['alipay_name'])
+            || empty($owner['wxpay'])
+            || empty($owner['wxpay_name'])
+            || empty($owner['bank_card'])
+            || empty($owner['bank_card_name'])
+            || empty($owner['bank_card_type'])
+        ) {
+            show(403, "车主认证信息缺失！");
+        } else {
+            $res = UserModel::where('id', request()->uid)->update(['is_owner' => '1']);
+            if ($res) {
+                show(200, "提交成功！");
+            } else {
+                show(403, "提交失败！");
+            }
+        }
+    }
+
+    /**
+     * 车主认证公共模块代码
+     * @param $owner 车主信息
      * @param array $data 提交信息
      */
-    private function authBase(array $owner, array $data)
+    private function authBase($owner, array $data)
     {
         if (!empty($owner)) {
             // 存在信息则更新
@@ -543,9 +578,9 @@ class MineController extends CommonController
      */
     public function income()
     {
-        $data = Request::only(['per_page', 'current_page']);
-        $owner = Db::name('user_owner')->where('user_id',request()->uid)->field(['id'])->find();
-        $info = UserBuyLogModel::whereOr('user_id', request()->uid)
+        $data  = Request::only(['per_page', 'current_page']);
+        $owner = Db::name('user_owner')->where('user_id', request()->uid)->field(['id'])->find();
+        $info  = UserBuyLogModel::whereOr('user_id', request()->uid)
             ->whereOr('owner_id', $owner['id'])
             ->field('user_id,indent,pay_type,create_time,status,introduction,money,start,end,km,collection_money,owner_id')
             ->order('create_time', 'desc')

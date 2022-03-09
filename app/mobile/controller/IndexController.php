@@ -63,11 +63,13 @@ class IndexController extends CommonController
                 ->order('journey_user.id', 'desc')
                 ->find();
         }
+        // 字符串解压
+        $journey['line'] = gzuncompress(base64_decode($journey['line']));
         show(200, "获取数据成功！", $journey ?? []);
     }
 
     /**
-     * 获取旅途数据
+     * 获取首页旅途列表数据
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
@@ -137,7 +139,7 @@ class IndexController extends CommonController
                     $data['end_id']       = $userJourneyPass['end_id'];
                     $data['owner_status'] = $ownerJourney['status'];
                     $data['owner']        = [
-                        'name'         => mb_substr($ownerUser['name'], 0, 1, 'utf-8') . '司机',
+                        'name'         => mb_substr($ownerUser['name'], 0, 1, 'utf-8'),
                         'photo'        => $ownerUser['photo'],
                         'sex'          => $ownerUser['sex'],
                         'user_id'      => $ownerUser['user_id'],
@@ -170,7 +172,7 @@ class IndexController extends CommonController
                 $data['end_id']       = $userJourneyPass['end_id'];
                 $data['owner_status'] = $journey['status'];
                 $data['owner']        = [
-                    'name'         => mb_substr($ownerUser['name'], 0, 1, 'utf-8') . '司机',
+                    'name'         => mb_substr($ownerUser['name'], 0, 1, 'utf-8'),
                     'photo'        => $ownerUser['photo'],
                     'user_id'      => request()->uid,
                     'owner_id'     => $ownerUser['owner_id'],
@@ -347,7 +349,7 @@ class IndexController extends CommonController
         $this->editDeadlineData();
         // 接收数据
         $data = Request::only(['per_page', 'current_page']);
-        $info = Db::view('journey', 'id,start,sum,end,trip,owner_id,user_id,line')
+        $info = Db::view('journey', 'id,start,sum,end,trip,owner_id,user_id')
             ->view('user', 'photo,name,mobile,sex', 'journey.user_id=user.id')
             ->where(['journey.type' => '1', 'journey.status' => '3'])
             ->order('journey.create_time', 'desc')
@@ -377,7 +379,7 @@ class IndexController extends CommonController
         $this->editDeadlineData();
         // 接收数据
         $data = Request::only(['per_page', 'current_page']);
-        $info = Db::view('journey', 'id,start,end,trip,deadline,user_id,line')
+        $info = Db::view('journey', 'id,start,end,trip,deadline,user_id')
             ->view('user', 'photo,name,mobile,sex', 'journey.user_id=user.id')
             ->where(['journey.type' => '0', 'journey.status' => '0'])
             ->paginate([
@@ -421,6 +423,22 @@ class IndexController extends CommonController
             }
         }
         show(200, "获取数据成功！", ['data' => $info, 'sort' => $sort[0] ?? '1']);
+    }
+
+    /**
+     * 根据旅途ID获取轨迹线
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    public function queryLine()
+    {
+        // 接收旅途ID
+        $id = Request::param('id');
+        // 查询轨迹线
+        $info = Db::name('journey')->where('id', $id)->field('line')->find();
+        $info['line'] = gzuncompress(base64_decode($info['line']));
+        show(200, "获取数据成功！", $info ?? []);
     }
 
 }

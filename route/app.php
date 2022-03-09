@@ -8,19 +8,19 @@
 // +----------------------------------------------------------------------
 // | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
+use think\facade\Db;
 use think\facade\Route;
 
-Route::get('think', function () {
-    return 'hello,ThinkPHP6!';
+Route::get('/', function () {
+    return 'hello,共享旅途!';
 });
 
-/*// 批量填充用户
-Route::get('addUserData','\app\seed\Data@addUserDataSeed');
-// 批量填充车主
-Route::get('addOwnerData','\app\seed\Data@addOwnerDataSeed');
-// 批量填充用户支付订单
-Route::get('addUserBuyData','\app\seed\Data@addUserBuyDataSeed');
-// 批量填充提现订单
-Route::get('addOwnerWithdrawData','\app\seed\Data@addOwnerWithdrawDataSeed');
-// 批量填充旅途数据
-Route::get('addJourneyData','\app\seed\Data@addJourneyDataSeed');*/
+Route::get('test',function (){
+    $data = Db::view('user','user,nickname,is_owner')
+        ->view('user_owner','*','user_owner.user_id=user.id')
+        ->where('user_owner.status','1')
+        ->where('user.is_owner','2')
+        ->where('user.status','1')
+        ->select()->toArray();
+    dd($data);
+});

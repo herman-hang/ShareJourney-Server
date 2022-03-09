@@ -79,6 +79,7 @@ Route::group('mine', function () {
     Route::get('withdraw/resubmit/audit', 'resubmitAudit');
     Route::get('bill/income', 'income');
     Route::get('withdraw', 'withdraw');
+    Route::get('user/owner/auth', 'authSubmitAudit');
 })->prefix('MineController/');
 
 /**
@@ -93,6 +94,7 @@ Route::group('index', function () {
     Route::get('owner/indent', 'getOwnerIndent');
     Route::get('user/indent', 'getUserIndent');
     Route::get('path/line', 'getPathLineData');
+    Route::get('query/line', 'queryLine');
 })->prefix('IndexController/');
 
 /**

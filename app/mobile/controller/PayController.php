@@ -133,7 +133,7 @@ class PayController extends CommonController
         $journey['trip']           = $info['trip']['number'];
         $journey['user_id']        = $info['user_id'];
         $journey['scheduled_time'] = $info['scheduled_time'];
-        $journey['line']           = $info['line'];
+        $journey['line']           = base64_encode(gzcompress($info['line'],9));
         // 插入旅途表
         $journeyResult = JourneyModel::create($journey);
         if ($journeyResult) {

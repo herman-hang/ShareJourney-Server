@@ -26,7 +26,7 @@ class JourneyController extends CommonController
         $this->editDeadlineData();
         // 接收数据
         $data = Request::only(['per_page', 'current_page', 'keywords']);
-        $info = Db::view('journey', 'id,start,sum,end,trip,owner_id,user_id,line,deadline')
+        $info = Db::view('journey', 'id,start,sum,end,trip,owner_id,user_id,deadline')
             ->view('user', 'photo,name,mobile,sex', 'journey.user_id=user.id')
             ->view('journey_pass','end','journey.id=journey_pass.journey_id')
             ->where(['journey.type' => '1', 'journey.status' => '0'])

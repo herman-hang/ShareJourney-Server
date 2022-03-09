@@ -41,7 +41,9 @@
     "ext-simplexml": "*",
     "ext-libxml": "*",
     "ext-curl": "*",
-    "yansongda/pay": "~3.0.0"
+    "yansongda/pay": "~3.0.0",
+    "topthink/think-worker": "^3.0",
+    "ext-zlib": "*"
   },
   "require-dev": {
     "symfony/var-dumper": "^4.2",

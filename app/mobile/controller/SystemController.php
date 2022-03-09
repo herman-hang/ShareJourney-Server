@@ -255,7 +255,8 @@ class SystemController extends CommonController
         if (empty($codeInfo)) {
             show(403, "验证码已过期！");
         }
-        if ($data['code'] !== $codeInfo['code']) {
+        // 统一将字母转为小写再判断
+        if (strtolower($data['code']) !== strtolower($codeInfo['code'])) {
             show(403, "验证码错误！");
         }
         // 滑动验证码最终验证

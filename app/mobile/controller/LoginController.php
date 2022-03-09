@@ -299,7 +299,7 @@ class LoginController extends CommonController
         } else {
             $data['open_id'] = $result['openId'];
             Cache::set('bind_weixin_login_' . Request::ip(), $data, 600);
-            show(401, "请绑定手机号码！");
+            show(403, "请绑定手机号码！");
         }
     }
 

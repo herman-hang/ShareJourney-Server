@@ -62,7 +62,7 @@ class OwnerController extends CommonController
         $journey['scheduled_time'] = $cacheData['time'];
         $journey['deadline']       = $deadline;
         $journey['owner_id']       = $ownerInfo['id'];
-        $journey['line']           = $data['line'];
+        $journey['line']           = base64_encode(gzcompress($data['line'], 9)); // 字符串压缩
         // 插入旅途表
         $journeyResult = JourneyModel::create($journey);
         if ($journeyResult) {
